@@ -1,7 +1,7 @@
 
 # classes
 
-from py4DSTEM.emd.classes import (
+from emd.classes import (
     Metadata,
     Node,
     Root,
@@ -16,9 +16,9 @@ from py4DSTEM.emd.classes import (
 
 # read/write
 
-from py4DSTEM.emd.read import (
+from emd.read import (
     read,
     print_h5_tree
 )
-from py4DSTEM.emd.write import write as save
+from emd.write import write as save
 

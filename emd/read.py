@@ -9,12 +9,12 @@ import warnings
 
 
 # Classes
-from py4DSTEM.emd.classes import (
+from emd.classes import (
     Root,
     Node,
     RootedNode
 )
-from py4DSTEM.emd.classes.utils import (
+from emd.classes.utils import (
     _get_class,
     EMD_data_group_types
 )

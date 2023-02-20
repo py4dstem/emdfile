@@ -30,7 +30,7 @@ def _get_class(grp):
     """
     Returns a dictionary of Class constructors from corresponding strings
     """
-    from py4DSTEM.emd import classes
+    from emd import classes
 
     # Build lookup table for classes
     lookup = {}

@@ -7,13 +7,13 @@ import h5py
 from typing import Optional
 from os.path import basename
 
-from py4DSTEM.emd.classes.tree import Node
+from emd.classes.tree import Node
 
 
 class PointList(Node):
     """
     A wrapper around structured numpy arrays, with read/write functionality in/out of
-    py4DSTEM formatted HDF5 files.
+    EMD formatted HDF5 files.
 
     """
     _emd_group_type = 'pointlist'

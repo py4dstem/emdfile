@@ -3,9 +3,9 @@ from typing import Optional
 import h5py
 from os.path import basename
 
-from py4DSTEM.emd.tqdmnd import tqdmnd
-from py4DSTEM.emd.classes.tree import Node
-from py4DSTEM.emd.classes.pointlist import PointList
+from emd.tqdmnd import tqdmnd
+from emd.classes.tree import Node
+from emd.classes.pointlist import PointList
 
 class PointListArray(Node):
     """
