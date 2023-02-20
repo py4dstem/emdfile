@@ -22,3 +22,10 @@ from emd.read import (
 )
 from emd.write import write as save
 
+
+
+# test paths
+
+from os.path import dirname,join
+_TESTPATH = join(join(dirname(__file__), ".."), "test/unit_test_data")
+

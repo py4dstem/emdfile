@@ -1,5 +1,5 @@
 import numpy as np
-from py4DSTEM.emd import (
+from emd import (
     Node,
     Metadata,
     Array,
