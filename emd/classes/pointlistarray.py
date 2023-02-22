@@ -11,6 +11,9 @@ class PointListArray(Node):
     """
     An 2D array of PointLists which share common coordinates.
     """
+
+    _emd_group_type = "pointlistarray"
+
     def __init__(
         self,
         dtype,
@@ -29,8 +32,6 @@ class PointListArray(Node):
         Returns:
             a PointListArray instance
         """
-        _emd_group_type = "pointlistarray"
-
         assert len(shape) == 2, "Shape must have length 2."
 
         super().__init__()
