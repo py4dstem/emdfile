@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "emdfile"
+version = "0.0.1"
+authors = [
+    { name="Ben Savitzky", email="ben.savitzky@gmail.com" }
+]
+descriptor = "An HDF5 / Python interface for scientific data"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+]
+dependencies = [
+    'h5py >= 3.2.0',
+    'tqdm >= 4.46.1',
+    'numpy',
+    'scipy'
+]
+
+[project.urls]
+"github" = "https://github.com/py4dstem/emdfile"
+"emdatasets" = "https://emdatasets.com/format/"
+
+[tool.hatch.build]
+include = [
+    "/tutorials"
+]
