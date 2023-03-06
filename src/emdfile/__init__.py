@@ -24,6 +24,12 @@ from emdfile.write import write as save
 
 
 
+# version
+
+from emdfile.version import __version__
+
+
+
 # test paths
 
 from os.path import dirname,join

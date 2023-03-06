@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "emdfile"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
     { name="Ben Savitzky", email="ben.savitzky@gmail.com" }
 ]
@@ -26,7 +26,3 @@ dependencies = [
 "github" = "https://github.com/py4dstem/emdfile"
 "emdatasets" = "https://emdatasets.com/format/"
 
-[tool.hatch.build]
-include = [
-    "/tutorials"
-]
