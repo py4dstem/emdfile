@@ -33,5 +33,5 @@ from emdfile.version import __version__
 # test paths
 
 from os.path import dirname,join
-_TESTPATH = join(join(dirname(__file__), ".."), "test/unit_test_data")
+_TESTPATH = join(join(dirname(__file__), "../.."), "test/unit_test_data")
 
