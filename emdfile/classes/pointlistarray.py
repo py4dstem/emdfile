@@ -3,9 +3,9 @@ from typing import Optional
 import h5py
 from os.path import basename
 
-from emd.tqdmnd import tqdmnd
-from emd.classes.tree import Node
-from emd.classes.pointlist import PointList
+from emdfile.tqdmnd import tqdmnd
+from emdfile.classes.tree import Node
+from emdfile.classes.pointlist import PointList
 
 class PointListArray(Node):
     """

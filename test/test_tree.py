@@ -4,10 +4,10 @@ from os import remove
 from numpy import array_equal
 import h5py
 
-from emd import _TESTPATH
-from emd import save, read
-from emd.read import _is_EMD_file,_get_EMD_rootgroups
-from emd.classes import (
+from emdfile import _TESTPATH
+from emdfile import save, read
+from emdfile.read import _is_EMD_file,_get_EMD_rootgroups
+from emdfile.classes import (
     Node,
     Root,
     Metadata,

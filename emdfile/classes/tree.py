@@ -2,8 +2,8 @@ from typing import Optional
 from os.path import basename
 import h5py
 
-from emd.classes import Metadata
-from emd.classes.utils import EMD_group_types, _get_class
+from emdfile.classes import Metadata
+from emdfile.classes.utils import EMD_group_types, _get_class
 
 
 class Node:

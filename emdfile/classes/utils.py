@@ -30,7 +30,7 @@ def _get_class(grp):
     """
     Returns a dictionary of Class constructors from corresponding strings
     """
-    from emd import classes
+    from emdfile import classes
 
     # Build lookup table for classes
     lookup = {}

@@ -7,7 +7,7 @@ import h5py
 from numbers import Number
 from os.path import basename
 
-from emd.classes.tree import Node
+from emdfile.classes.tree import Node
 
 class Array(Node):
     """

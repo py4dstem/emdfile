@@ -1,7 +1,7 @@
 
 # classes
 
-from emd.classes import (
+from emdfile.classes import (
     Metadata,
     Node,
     Root,
@@ -16,11 +16,11 @@ from emd.classes import (
 
 # read/write
 
-from emd.read import (
+from emdfile.read import (
     read,
     print_h5_tree
 )
-from emd.write import write as save
+from emdfile.write import write as save
 
 
 

@@ -9,12 +9,12 @@ import warnings
 
 
 # Classes
-from emd.classes import (
+from emdfile.classes import (
     Root,
     Node,
     RootedNode
 )
-from emd.classes.utils import (
+from emdfile.classes.utils import (
     _get_class,
     EMD_data_group_types
 )
