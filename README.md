@@ -15,16 +15,19 @@ filetree-like representations of data and metadata.
 
 Run
 
->>> pip install emdfile
+> pip install emdfile
 
 Or, to install from source code, clone this repository and from the
 distribution level directory (i.e. where pyproject.toml lives) run
 
->>> pip install .
+> pip install .
 
 
 
 ## Examples and syntax
+
+For a narrative introduction, see
+[tutorials/emd_narrative_intro.md](tutorials/emd_narrative_intro.md).
 
 For an example, see
 [tutorials/emd_intro_example.ipynb](./tutorials/emd_intro_example.ipynb).
@@ -32,7 +35,7 @@ For an example, see
 For an walkthrough of the syntax, see
 [tutorials/emd_package_walkthrough.ipynb](./tutorials/emd_package_walkthrough.ipynb).
 
-For an example of a downstream Python package with it's IO build on emdfile, see
+For an example of a downstream Python package using emdfile for IO, see
 [tutorials/test_custom_class.py](./tutorials/test_custom_class.py) and
 [tutorials/sample_custom_class_module](./tutorials/sample_custom_class_module).
 

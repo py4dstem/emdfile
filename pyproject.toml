@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "emdfile"
 version = "0.0.2"
 authors = [
-    { name="Ben Savitzky", email="ben.savitzky@gmail.com" }
+    { name="Benjamin H. Savitzky", email="ben.savitzky@gmail.com" }
 ]
 descriptor = "An HDF5 / Python interface for scientific data"
 readme = "README.md"
