@@ -108,8 +108,8 @@ def _version_is_geq(current,minimum):
 
 def read(
     filepath,
-    tree: Optional[Union[bool,str]] = True,
     emdpath: Optional[str] = None,
+    tree: Optional[Union[bool,str]] = True,
     **legacy_options,
     ):
     """

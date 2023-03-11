@@ -18,8 +18,8 @@ def write(
     filepath,
     data,
     mode = 'w',
-    tree = True,
     emdpath = None,
+    tree = True,
     ):
     """
     Saves data to a .h5 file at filepath. Specific behavior depends on the
