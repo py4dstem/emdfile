@@ -18,7 +18,8 @@ from emdfile.classes import (
 
 from emdfile.read import (
     read,
-    print_h5_tree
+    print_h5_tree,
+    _is_EMD_file
 )
 from emdfile.write import write as save
 
