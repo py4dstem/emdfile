@@ -1,4 +1,5 @@
 
+
 # classes
 
 from emdfile.classes import (
@@ -25,9 +26,18 @@ from emdfile.write import write as save
 
 
 
+
 # version
 
 from emdfile.version import __version__
+
+
+
+
+# n-dimensional progress bar
+
+from emdfile.tqdmnd import tqdmnd
+
 
 
 
