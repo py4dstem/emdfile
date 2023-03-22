@@ -240,12 +240,35 @@ class Node:
         treepath = '/'.join(node_list)
         upstream_node = self.get_from_tree(treepath)
 
-        # remove connection from upstream to this node
-        del(upstream_node._branch[this_node])
+        #print(upstream_node)
+        #print(this_node)
 
-        # add to a new tree
-        self._root = None
-        node.add_to_tree(self)
+        # if grafting from a non-root node
+        if this_node != '':
+
+            # remove connection from upstream to this node
+            del(upstream_node._branch[this_node])
+
+            # add to a new tree
+            self._root = None
+            print(node)
+            print(self)
+            node.add_to_tree(self)
+
+        # if grafting from a root node
+        else:
+
+            # add objects one by one
+            keys = list(upstream_node._branch.keys())
+            for k in keys:
+                n = upstream_node.tree(k)
+                n._root = None
+                node.add_to_tree(n)
+                # remove upstream connections
+                del(upstream_node._branch[k])
+
+#                upstream_node.tree(k).graft(node, merge_metadata=False)
+
 
         # add old root metadata to this node
         assert(merge_metadata in [True,False,'copy'])
