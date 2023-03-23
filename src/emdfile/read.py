@@ -146,13 +146,11 @@ def read(
     assert(_is_EMD_file(filepath)), er3
 
 
-    # get version
+    # get/check version
     v = _get_EMD_version(filepath)
-
-
-    # TODO: catch for older versions...
-    if v[0] < 1:
-        raise Exception('Reader does not currently support EMD v<1.0')
+    if v != (1,0,0):
+        #raise Exception('oh dear')
+        pass
 
 
 
@@ -208,6 +206,7 @@ def read(
         if nodegroup is rootgroup and tree in (True,'branch'):
             # build the tree
             _populate_tree(root,rootgroup)
+            node = root
 
         # ...if a single node was requested
         elif tree is False:
@@ -215,7 +214,6 @@ def read(
             node = _read_single_node(nodegroup)
             # build the tree and return
             root.add_to_tree(node)
-            return root
 
         # ...if a branch was requested
         elif tree is True:
@@ -229,10 +227,10 @@ def read(
         else:
             # build the tree
             _populate_tree(root,nodegroup)
-
+            node = root
 
     # Return
-    return root
+    return node
 
 
 

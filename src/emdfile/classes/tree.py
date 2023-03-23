@@ -336,6 +336,7 @@ class Node:
 
         for an arg of the appropriate type (bool, Node, and string).
         """
+
         # if `arg` is passed, choose behavior from its type
         if isinstance(arg,bool):
             self.show_tree(root=arg)
