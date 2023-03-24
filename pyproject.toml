@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "emdfile"
-version = "0.0.2"
+dynamic = ["version"]
 authors = [
     { name="Benjamin H. Savitzky", email="ben.savitzky@gmail.com" }
 ]
@@ -21,6 +21,10 @@ dependencies = [
     'numpy',
     'scipy'
 ]
+
+[tool.hatch.version]
+path = "src/emdfile/version.py"
+#validate-bump = false
 
 [project.urls]
 "github" = "https://github.com/py4dstem/emdfile"
