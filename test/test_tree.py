@@ -465,15 +465,14 @@ class TestTreeIO(TreeBuilder):
         and 'array' should match self.ar
         """
         # Load data
-        loaded_data = read(
+        lar = read(
             single_node_path,
             emdpath = '/root/array'
         )
 
         # Does the tree look as it should?
-        assert(isinstance(loaded_data,Root))
-        lar = loaded_data.tree('array')
         assert(isinstance(lar,Array))
+        assert(isinstance(lar.root,Root))
 
         # Did the root metadata load correctly
         lmd1 = lar.root.metadata['metadata_root']
@@ -626,29 +625,27 @@ class TestTreeIO(TreeBuilder):
         )
 
         # Does the tree look as it should?
-        assert(isinstance(loaded_data,Root))
-        assert(loaded_data.name == 'root')
+        assert(isinstance(loaded_data,PointListArray))
+        assert(loaded_data.name == 'pointlistarray')
 
-        lmd_root = loaded_data.metadata['metadata_root']
-        lmd_root2 = loaded_data.metadata['metadata_root2']
-        lpla = loaded_data.tree('pointlistarray')
+        lmd_root = loaded_data.root.metadata['metadata_root']
+        lmd_root2 = loaded_data.root.metadata['metadata_root2']
 
         # Check types
         assert(isinstance(lmd_root,Metadata))
         assert(isinstance(lmd_root2,Metadata))
-        assert(isinstance(lpla,PointListArray))
 
         # New objects are distinct from old objects
         assert(lmd_root is not self.md_root)
         assert(lmd_root2 is not self.md_root2)
-        assert(lpla is not self.pla)
+        assert(loaded_data is not self.pla)
 
         # New objects carry identical data to old objects
         assert(lmd_root._params == self.md_root._params)
         assert(lmd_root2._params == self.md_root2._params)
-        for x in range(lpla.shape[0]):
-            for y in range(lpla.shape[1]):
-                assert(self.pointlist_equal(lpla[x,y], self.pla[x,y]))
+        for x in range(loaded_data.shape[0]):
+            for y in range(loaded_data.shape[1]):
+                assert(self.pointlist_equal(loaded_data[x,y], self.pla[x,y]))
 
         pass
 

@@ -295,6 +295,9 @@ class Array(Node):
         assert(n < len(self._dims)), f"Can't retrieve the {n}th dim vector - {n} must be <= {len(self._dims)-1}"
         return self._dims[n]
 
+    # alias
+    dim = get_dim
+
     def set_dim(
         self,
         n:int,
