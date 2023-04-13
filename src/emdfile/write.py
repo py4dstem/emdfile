@@ -4,6 +4,7 @@ import h5py
 import numpy as np
 from os.path import exists
 from os import remove
+from uuid import uuid4
 from emdfile.read import _is_EMD_file, _get_EMD_rootgroups
 from emdfile.classes.utils import EMD_data_group_types
 from emdfile.classes import (
@@ -339,13 +340,14 @@ def write(
 def _write_header(
     file
     ):
+    from emdfile import _PROGRAM_NAME, _USER_NAME
     file.attrs.create("emd_group_type",'file')
     file.attrs.create("version_major",1)
     file.attrs.create("version_minor",0)
     #file.attrs.create("version_release",0)
-    #file.attrs.create("UUID",UUID)
-    #file.attrs.create("authoring_program",PROGRAM_NAME)
-    #file.attrs.create("authoring_user",USER_NAME)
+    file.attrs.create("UUID",str(uuid4()))
+    file.attrs.create("authoring_program",_PROGRAM_NAME)
+    file.attrs.create("authoring_user",_USER_NAME)
 
 
 def _write_from_root(
