@@ -8,7 +8,7 @@ file specification can be found [here](https://emdatasets.com/format/).
 `emdfile` is a Python package defining write and read functions and a set of
 classes which together interface between EMD 1.0 files and Python runtime
 objects.  The classes are designed to quickly build, save to, and read from
-filetree-like representations of data and metadata.
+filetree-like representations of data and metadata, and is built on HDF5+h5py.
 
 
 ## Installation
@@ -17,7 +17,7 @@ Run
 
 > pip install emdfile
 
-Or, to install from source code, clone this repository and from the
+Or, to install from source code, you can clone this repository and from the
 distribution level directory (i.e. where pyproject.toml lives) run
 
 > pip install .
@@ -26,18 +26,20 @@ distribution level directory (i.e. where pyproject.toml lives) run
 
 ## Examples and syntax
 
-For a narrative introduction, see
-[tutorials/emd_narrative_intro.md](tutorials/emd_narrative_intro.md).
 
-For an example, see
+For a few simple examples, see
+[coming extremely soon ish!][https://www.youtube.com/watch?v=ebeNeQFUMa0]
+
+For a longer, narrative intro example, see
 [tutorials/emd_intro_example.ipynb](./tutorials/emd_intro_example.ipynb).
 
-For an walkthrough of the syntax, see
+For a detailed walkthrough of the syntax, see
 [tutorials/emd_package_walkthrough.ipynb](./tutorials/emd_package_walkthrough.ipynb).
 
-For an example of a downstream Python package using emdfile for IO, see
-[tutorials/test_custom_class.py](./tutorials/test_custom_class.py) and
-[tutorials/sample_custom_class_module](./tutorials/sample_custom_class_module).
+
+`emdfile` is designed to support I/O in downstream Python modules and packages.
+When [tutorials/test_custom_classes.py](./tutorials/test_custom_class.py) is run as a script,
+it imports the `sample_custom_emd_classes` Python module at [tutorials/sample_custom_emd_classes](./tutorials/sample_custom_emd_classes)
 
 
 
