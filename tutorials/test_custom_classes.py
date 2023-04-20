@@ -1,8 +1,6 @@
 import emdfile as emd
 
 import numpy as np
-from os.path import exists
-from os import remove
 
 from sample_custom_emd_classes import (
     MyArrayClass,
