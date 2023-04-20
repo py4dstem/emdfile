@@ -449,14 +449,14 @@ class Array(Node):
         if not self.is_stack:
             return self.data.shape
         else:
-            return self.data.shape[:-1]
+            return self.data.shape[1:]
 
     @property
     def depth(self):
         if not self.is_stack:
             return 0
         else:
-            return self.data.shape[-1]
+            return self.data.shape[0]
 
     @property
     def rank(self):
@@ -471,7 +471,7 @@ class Array(Node):
     def get_slice(self,label,name=None):
         idx = self.slicelabels._dict[label]
         return Array(
-            data = self.data[..., idx],
+            data = self.data[idx],
             name = name if name is not None else self.name+'_'+label,
             units = self.units,
             dims = self.dims,
@@ -576,7 +576,6 @@ class Array(Node):
         # Add stack dim vector, if present
         if self.is_stack:
             n = self.rank
-            name = '_labels_'
             dim = [s.encode('utf-8') for s in self.slicelabels]
 
             # write
@@ -584,7 +583,7 @@ class Array(Node):
                 f"dim{n}",
                 data = dim
             )
-            dset.attrs.create('name',name)
+            dset.attrs.create('name','_labels_')
 
         # Return
         return grp

@@ -435,9 +435,8 @@ class TestTreeIO(TreeBuilder):
         )
 
         # Does the tree look as it should?
-        assert(isinstance(loaded_data,Root))
-        lar = loaded_data.tree('array')
-        assert(isinstance(lar,Array))
+        assert(isinstance(loaded_data,Array))
+        lar = loaded_data
 
         # Did the root metadata load correctly
         lmd1 = lar.root.metadata['metadata_root']
@@ -504,10 +503,9 @@ class TestTreeIO(TreeBuilder):
         )
 
         # Does the tree look as it should?
-        assert(isinstance(loaded_data,Root))
+        assert(isinstance(loaded_data,Array))
         assert(loaded_data.name == 'unrooted_array')
-        lar = loaded_data.tree('unrooted_array')
-        assert(isinstance(lar,Array))
+        lar = loaded_data
 
         # Did the root metadata load correctly
         assert(len(lar.root.metadata.keys())==0)
@@ -660,13 +658,13 @@ class TestTreeIO(TreeBuilder):
         )
 
         # Does the tree look as it should?
-        assert(isinstance(loaded_data,Root))
-        assert(loaded_data.name == 'root')
+        assert(isinstance(loaded_data,PointList))
+        assert(loaded_data.name == 'pointlist3')
 
-        lmd_root = loaded_data.metadata['metadata_root']
-        lmd_root2 = loaded_data.metadata['metadata_root2']
-        lpl3 = loaded_data.tree('/pointlist3')
-        lpl4 = loaded_data.tree('pointlist3/pointlist4')
+        lmd_root = loaded_data.root.metadata['metadata_root']
+        lmd_root2 = loaded_data.root.metadata['metadata_root2']
+        lpl3 = loaded_data
+        lpl4 = loaded_data.tree('pointlist4')
         lmd3 = lpl4.metadata['metadata3']
 
         # Check types
@@ -704,18 +702,17 @@ class TestTreeIO(TreeBuilder):
         )
 
         # Does the tree look as it should?
-        assert(isinstance(loaded_data,Root))
-        assert(loaded_data.name == 'root')
+        assert(isinstance(loaded_data,PointList))
+        assert(loaded_data.name == 'pointlist4')
 
-        lmd_root = loaded_data.metadata['metadata_root']
-        lmd_root2 = loaded_data.metadata['metadata_root2']
-        lpl4 = loaded_data.tree('pointlist4')
+        lmd_root = loaded_data.root.metadata['metadata_root']
+        lmd_root2 = loaded_data.root.metadata['metadata_root2']
+        lpl4 = loaded_data
         lmd3 = lpl4.metadata['metadata3']
 
         # Check types
         assert(isinstance(lmd_root,Metadata))
         assert(isinstance(lmd_root2,Metadata))
-        assert(isinstance(lpl4,PointList))
         assert(isinstance(lmd3,Metadata))
 
         # New objects are distinct from old objects
@@ -745,19 +742,19 @@ class TestTreeIO(TreeBuilder):
         )
 
         # Does the tree look as it should?
-        assert(isinstance(loaded_data,Root))
-        assert(loaded_data.name == 'root')
+        assert(isinstance(loaded_data,Array))
+        assert(loaded_data.name == 'array')
 
-        lmd_root = loaded_data.metadata['metadata_root']
-        lmd_root2 = loaded_data.metadata['metadata_root2']
-        lar = loaded_data.tree('array')
+        lmd_root = loaded_data.root.metadata['metadata_root']
+        lmd_root2 = loaded_data.root.metadata['metadata_root2']
+        lar = loaded_data
         lmd = lar.metadata['metadata']
         lmd2 = lar.metadata['metadata2']
-        lpl5 = loaded_data.tree('array/pointlist5')
+        lpl5 = loaded_data.tree('pointlist5')
 
         # Ensure the data that shouldn't be here, isn't
-        assert('pointlist3' not in loaded_data._branch.keys())
-        assert('array' in loaded_data._branch.keys())
+        assert('pointlist3' not in loaded_data.root._branch.keys())
+        assert('array' in loaded_data.root._branch.keys())
 
         # Check types
         assert(isinstance(lmd_root,Metadata))
@@ -801,36 +798,34 @@ class TestTreeIO(TreeBuilder):
         )
 
         # Does the tree look as it should?
-        assert(isinstance(loaded_data,Root))
-        assert(loaded_data.name == 'root')
+        assert(isinstance(loaded_data,Array))
+        assert(loaded_data.name == 'array')
 
-        lmd_root = loaded_data.metadata['metadata_root']
-        lmd_root2 = loaded_data.metadata['metadata_root2']
-        lar = loaded_data.tree('array')
-        assert(len(lar.metadata)==0)
-        lpl5 = loaded_data.tree('array/pointlist5')
+        lmd_root = loaded_data.root.metadata['metadata_root']
+        lmd_root2 = loaded_data.root.metadata['metadata_root2']
+        assert(len(loaded_data.metadata)==0)
+        lpl5 = loaded_data.tree('pointlist5')
 
         # Ensure the data that shouldn't be here, isn't
-        assert('pointlist3' not in loaded_data._branch.keys())
-        assert('array' in loaded_data._branch.keys())
+        assert('pointlist3' not in loaded_data.root._branch.keys())
+        assert('array' in loaded_data.root._branch.keys())
 
         # Check types
         assert(isinstance(lmd_root,Metadata))
         assert(isinstance(lmd_root2,Metadata))
-        assert(isinstance(lar,Array))
         assert(isinstance(lpl5,PointList))
 
         # New objects are distinct from old objects
         assert(lmd_root is not self.md_root)
         assert(lmd_root2 is not self.md_root2)
-        assert(lar is not self.ar2)
+        assert(loaded_data is not self.ar2)
         assert(lpl5 is not self.pl5)
 
         # New objects carry identical data to old objects
         assert(lmd_root._params == self.md_root._params)
         assert(lmd_root2._params == self.md_root2._params)
-        assert(array_equal(lar.data, self.ar2.data))    # ensure we did overwrite
-        assert(not(array_equal(lar.data, self.ar.data)))
+        assert(array_equal(loaded_data.data, self.ar2.data))    # ensure we did overwrite
+        assert(not(array_equal(loaded_data.data, self.ar.data)))
         assert(self.pointlist_equal(lpl5, self.pl5))
 
         pass
@@ -888,7 +883,7 @@ class TestTreeIO(TreeBuilder):
         save(
             subtree_noroot_path,
             self.pl3,
-            tree = "noroot"
+            tree = None
         )
 
     def _append_to_h5(self):

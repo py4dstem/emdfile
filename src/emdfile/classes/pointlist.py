@@ -78,6 +78,8 @@ class PointList(Node):
         Appends a numpy structured array. Its dtypes must agree with the existing data.
         """
         assert self.dtype == data.dtype, "Error: dtypes must agree"
+        if isinstance(data,PointList):
+            data = data.data
         self.data = np.append(self.data, data)
 
     def remove(self, mask):

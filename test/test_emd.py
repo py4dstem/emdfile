@@ -106,8 +106,7 @@ class TestEmd:
         # save and read
         print(path_h5)
         save(path_h5,self.array)
-        root = read(path_h5)
-        new_array = root.tree('array')
+        new_array = read(path_h5)
         # check it's the same
         assert(isinstance(new_array,Array))
         assert(array_equal(self.array.data,new_array.data))
@@ -118,8 +117,7 @@ class TestEmd:
         assert(isinstance(self.array2,Array))
         # save and read
         save(path_h5,self.array2)
-        root = read(path_h5)
-        new_array = root.tree('array2')
+        new_array = read(path_h5)
         # check it's the same
         assert(isinstance(new_array,Array))
         assert(array_equal(self.array2.data,new_array.data))

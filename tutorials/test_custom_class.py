@@ -1,42 +1,69 @@
-from py4DSTEM import emd
-import sample_custom_class_module
+import emdfile as emd
 
 import numpy as np
 from os.path import exists
 from os import remove
 
+from sample_custom_class_module import (
+    MyArrayClass,
+    MyPointsClass,
+    MyCustomClass
+)
+
 
 # prepare filepath
-fp = "/Users/Ben/Desktop/test.h5"
-if exists(fp):
-    remove(fp)
+filepath = "/Users/Ben/Desktop/test.h5"
+if exists(filepath):
+    remove(filepath)
 
 
 
-# instantiate
-instance = sample_custom_class_module.classes.MyCustomClass(
-    name = 'test_instance',
+
+
+# instantiate the test classes
+
+
+array_instance = MyArrayClass(
+    name = 'test_array_instance',
+    data = np.ones((2,3))
+)
+
+points_instance = MyPointsClass(
+    name = 'test_points_instance',
+    x = np.arange(10),
+    y = np.arange(10,20),
+)
+
+custom_instance = MyCustomClass(
+    name = 'test_custom_instance',
     data = np.arange(12).reshape((3,4))
 )
 
 
 
 # save
-emd.save(fp,instance)
+emd.save(
+    filepath,
+    [array_instance, points_instance, custom_instance]
+)
 
 
 
 
 # load
-loaded_data = emd.read(fp)
+loaded_data = emd.read(filepath)
 
 
 
 print(loaded_data)
 print()
-print(loaded_data.tree('test_instance').data)
+loaded_data.tree()
 print()
-print(loaded_data.tree('test_instance').moredata)
+print(loaded_data.tree('test_array_instance').data)
+print()
+print(loaded_data.tree('test_points_instance').data)
+print()
+print(loaded_data.tree('test_custom_instance').data)
 
 
 

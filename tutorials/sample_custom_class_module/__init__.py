@@ -1,6 +1,10 @@
 
-_emd_hook = True
+_emd_hook = True   # this hook is necessary!
 
-from . import classes
+from .my_custom_classes import (
+    MyArrayClass,
+    MyPointsClass,
+    MyCustomClass
+)
 
 

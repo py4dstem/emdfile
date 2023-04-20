@@ -205,8 +205,20 @@ def read(
         # ...if the whole tree was requested
         if nodegroup is rootgroup and tree in (True,'branch'):
             # build the tree
-            _populate_tree(root,rootgroup)
-            node = root
+            n = _populate_tree(root,rootgroup)
+            # return...
+            if n == 1:
+                # ...if there's one node, return it
+                key = list(root._branch.keys())[0]
+                node = root.tree(key)
+            elif n == 0 and len(root.metadata) == 1:
+                # ...if there's no nodes and one dictionary,
+                # return it
+                key = list(root.metadata.keys())[0]
+                node = root.metadata[key]
+            else:
+                # ...otherwise, return the root
+                node = root
 
         # ...if a single node was requested
         elif tree is False:
@@ -248,12 +260,14 @@ def _read_single_node(grp):
     data = __class__.from_h5(grp)
     return data
 
-def _populate_tree(node,group):
+def _populate_tree(node,group,count=0):
     """
     `node` is a Node and `group` is its parallel h5py Group.
     Reads the tree underneath this nodegroup in the h5 file and adds it
     to the runtime tree underneath this node. Does *not* read `group`
     itself - this function grafts everything underneath `group` onto node
+
+    Returns the number of new nodes added to the tree
     """
     keys = [k for k in group.keys() if isinstance(group[k],h5py.Group)]
     keys = [k for k in keys if 'emd_group_type' in group[k].attrs.keys()]
@@ -263,6 +277,7 @@ def _populate_tree(node,group):
     for key in keys:
         #print(f"Reading group {group[key].name}")
         new_node = _read_single_node(group[key])
+        count += 1
         # Handle RootedNodes, which need to be grafted rather than added
         if isinstance(new_node,RootedNode):
             new_node.graft(node)
@@ -271,9 +286,10 @@ def _populate_tree(node,group):
             node.add_to_tree(new_node)
         _populate_tree(
             new_node,
-            group[key]
+            group[key],
+            count = count
         )
-    pass
+    return count
 
 
 
@@ -304,12 +320,12 @@ def _print_h5pyFile_tree(f, tablevel=0, linelevels=[], show_metadata=False):
     N = len(keys)
     for i,k in enumerate(keys):
         string = ''
-        string += '|' if 0 in linelevels else ''
+        string += '|' if 0 in linelevels else ' '
         for idx in range(tablevel):
-            l = '|' if idx+1 in linelevels else ''
-            string += '\t'+l
+            l = '|' if idx+1 in linelevels else ' '
+            string += '   '+l
         #print(string)
-        print(string+'--'+k)
+        print(string+'---'+k)
         if i == N-1:
             linelevels.remove(tablevel)
         _print_h5pyFile_tree(

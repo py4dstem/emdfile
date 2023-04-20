@@ -167,7 +167,7 @@ class Node:
         string = f"{self.__class__.__name__}( A Node called '{self.name}', containing the following top-level objects in its tree:"
         string += "\n"
         for k,v in self._branch.items():
-            string += "\n"+space+f"    {k} \t\t ({v.__class__.__name__})"
+            string += "\n"+space+f"    {k.ljust(24,' ')} \t ({v.__class__.__name__})"
         string += "\n)"
         return string
 
@@ -240,8 +240,6 @@ class Node:
         treepath = '/'.join(node_list)
         upstream_node = self.get_from_tree(treepath)
 
-        #print(upstream_node)
-        #print(this_node)
 
         # if grafting from a non-root node
         if this_node != '':
@@ -251,8 +249,6 @@ class Node:
 
             # add to a new tree
             self._root = None
-            print(node)
-            print(self)
             node.add_to_tree(self)
 
         # if grafting from a root node
@@ -304,7 +300,7 @@ class Node:
         Returns:
             (Node) the new root node
         """
-        new_root = Root(name=self.name)
+        new_root = Root( name=self.root.name+'_cut_'+self.name)
         return self.graft(new_root,merge_metadata=root_metadata)
 
 
@@ -657,8 +653,6 @@ class Branch:
 
 
     # print the full tree contents to screen
-    # TODO - this seems to have a bug when I run obj.tree()...
-    # TODO: unclear if this bug still exists - need to check
     def print(self):
         """
         Prints the tree contents to screen.
@@ -677,12 +671,11 @@ class Branch:
         N = len(keys)
         for i,k in enumerate(keys):
             string = ''
-            string += '|' if 0 in linelevels else ''
+            string += '|' if 0 in linelevels else ' '
             for idx in range(tablevel):
-                l = '|' if idx+1 in linelevels else ''
-                string += '\t'+l
-            #print(string)
-            print(string+'--'+k)
+                l = '|' if idx+1 in linelevels else ' '
+                string += '   '+l
+            print(string+'---'+k)
             if i == N-1:
                 linelevels.remove(tablevel)
             try:
