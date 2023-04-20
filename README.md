@@ -39,7 +39,7 @@ For a detailed walkthrough of the syntax, see
 
 `emdfile` is designed to support I/O in downstream Python modules and packages.
 When [tutorials/test_custom_classes.py](./tutorials/test_custom_class.py) is run as a script,
-it imports the `sample_custom_emd_classes` Python module at [tutorials/sample_custom_emd_classes](./tutorials/sample_custom_emd_classes)
+it makes, saves, loads, then prints the contents of the data carrying classes defined in the [tutorials/sample_custom_emd_classes](./tutorials/sample_custom_emd_classes) Python module.
 
 
 
