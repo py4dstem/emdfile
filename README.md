@@ -27,8 +27,8 @@ distribution level directory (i.e. where pyproject.toml lives) run
 ## Examples and syntax
 
 
-For a few simple examples, see
-[coming extremely soon ish!](https://www.youtube.com/watch?v=ebeNeQFUMa0)
+For a few simple examples...
+(([this is coming extremely soon ish!](https://www.youtube.com/watch?v=ebeNeQFUMa0)))
 
 For a longer, narrative intro example, see
 [tutorials/emd_intro_example.ipynb](./tutorials/emd_intro_example.ipynb).
