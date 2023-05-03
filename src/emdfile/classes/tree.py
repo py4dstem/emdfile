@@ -386,12 +386,18 @@ class Node:
     # decorator for storing params which generated new data nodes
 
     @staticmethod
-    def log_new_node(method):
-        """ Node subclass methods which generate and return a new node may
-        be decorated with @log_new_node. This method creates a new Metadata
-        dict stored inside `new_node.metadata` called `_fn_call_*`, where *
-        is the name of the decorated method, which stores the args/kwargs/params
-        passed to the generating method.
+    def newnode(method):
+        """
+        Decorator which may be added to node methods which product and
+        return a new node.  If such a method is decorated with
+
+        >>> @newnode
+
+        then the new node is added to the parent node's tree, and a
+        Metadata instance is added to the new node's metadata which
+        stores information about how the node was created, namely:
+        method's name, the parent's class and name, and all
+        the arguments passed to method.
         """
 
         @functools.wraps(method)
@@ -410,20 +416,24 @@ class Node:
                 d[method_args[i]] = args[i]
 
             # Add the generating class type and name
-            d['generating_class'] = self.__class__
-            d['generating_name'] = self.name
-            d['method'] = method_name
+            d['parent_class'] = self.__class__
+            d['parent_name'] = self.name
+            d['parent_method'] = method_name
 
             # Combine with kwargs
             kwargs.update(d)
-
-            # Run the method and get the returned node
-            new_node = method(*args,**kwargs)
-
-            # Make and add the metadata
+            # and make the metadata
             md = Metadata( name = "_fn_call_" + method_name )
             md._params.update( kwargs )
+
+            # Run the method, get the returned node
+            new_node = method(*args,**kwargs)
+
+            # Add the metadata to the node
             new_node.metadata = md
+
+            # Add the new node to the parent node's tree
+            self.tree(new_node)
 
             # Return
             return new_node
