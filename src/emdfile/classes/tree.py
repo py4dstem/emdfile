@@ -439,8 +439,9 @@ class Node:
     # in the context of child classes.
 
     # to add a new child class, only a new _get_constructor_args()
-    # classmethod should be necessary. The .from_h5 function should
-    # not need any modification.
+    # classmethod should be necessary. If a class needs additional
+    # construction post-initialization, define a _populate_instance()
+    # method. The .from_h5 function should not need any modification.
 
     @classmethod
     def _get_constructor_args(cls,group):
@@ -699,11 +700,6 @@ class Branch:
             string += "\n"+space+f"    {k} \t\t ({v.__class__.__name__})"
         string += "\n)"
         return string
-
-
-
-
-
 
 
 

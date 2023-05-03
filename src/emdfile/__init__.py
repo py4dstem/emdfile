@@ -39,7 +39,8 @@ from emdfile.read import (
     print_h5_tree,
     _is_EMD_file,
     _get_EMD_version,
-    _version_is_geq
+    _version_is_geq,
+    _read_metadata
 )
 from emdfile.write import write as save
 

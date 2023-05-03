@@ -338,5 +338,25 @@ def _print_h5pyFile_tree(f, tablevel=0, linelevels=[], show_metadata=False):
 
 
 
+def _read_metadata(
+    group,
+    name
+    ):
+    """
+    Returns a Metadata instance called name stored in the EMD node at group.
+    Returns False otherwise.
+    """
+    try:
+        grp_metadata = group['metadatabundle']
+    except KeyError:
+        return False
+    try:
+        metadata = Metadata.from_h5(group[name])
+        return metadata
+    except KeyError:
+        return False
+
+
+
 
 
