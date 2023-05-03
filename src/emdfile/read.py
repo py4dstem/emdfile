@@ -12,7 +12,8 @@ import warnings
 from emdfile.classes import (
     Root,
     Node,
-    RootedNode
+    RootedNode,
+    Metadata
 )
 from emdfile.classes.utils import (
     _get_class,
@@ -351,7 +352,7 @@ def _read_metadata(
     except KeyError:
         return False
     try:
-        metadata = Metadata.from_h5(group[name])
+        metadata = Metadata.from_h5(grp_metadata[name])
         return metadata
     except KeyError:
         return False
