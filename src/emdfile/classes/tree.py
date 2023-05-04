@@ -160,6 +160,10 @@ class Node:
         assert(isinstance(x,Metadata))
         self._metadata[x.name] = x
 
+    @property
+    def treekeys(self):
+        return self._branch.keys()
+
 
     # displays top level contents of the node
     def __repr__(self):
@@ -173,7 +177,7 @@ class Node:
 
 
 
-    # tree methods
+    ########## .tree methods ###########
 
     def show_tree(self,root=False):
         """
@@ -379,7 +383,7 @@ class Node:
             else:
                 raise Exception(f'Invalid arg {k}; must be in (show,add,get,cut,graft)')
 
-    ## end tree
+    ########## end .tree methods ###########
 
 
 
