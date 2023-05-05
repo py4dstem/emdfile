@@ -7,6 +7,54 @@ from emdfile import (
     PointListArray
 )
 
+from os.path import join,exists
+from os import remove
+from numpy import array_equal
+
+from emdfile import _TESTPATH
+from emdfile import save, read
+
+# Set paths
+dirpath = _TESTPATH
+testpath = join(dirpath,"test_base_classes.h5")
+
+
+
+
+
+class TestArray():
+
+
+    def test_instantiation(self):
+
+        # Array class instances should:
+        # - TODO
+
+        shape = (3,4,5)
+        d = np.arange(np.prod(shape)).reshape(shape)
+
+        ar = Array(
+            data = d
+        )
+        assert(isinstance(ar, Array))
+
+
+    def test_Array_comple_readwrite(self):
+
+        # make array
+        d = np.exp(1j*np.linspace(0,2*np.pi)).astype(np.complex64)
+        ar = Array(
+            data = d
+        )
+
+        # save, read, check
+        save(testpath,ar,mode='o')
+        ar2 = read(testpath)
+        assert(array_equal(ar.data,ar2.data))
+
+
+
+
 
 def test_Node():
 
@@ -32,18 +80,9 @@ def test_Metadata():
     assert(isinstance(metadata,Metadata))
 
 
-def test_Array():
 
-    # Array class instances should:
-    # - TODO
 
-    shape = (3,4,5)
-    d = np.arange(np.prod(shape)).reshape(shape)
 
-    ar = Array(
-        data = d
-    )
-    assert(isinstance(ar, Array))
 
 
 def test_PointList():
