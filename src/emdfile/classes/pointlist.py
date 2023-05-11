@@ -41,8 +41,11 @@ class PointList(Node):
         self.name = name
         self._dtype = self.data.dtype
         self._fields = self.data.dtype.names
-        self._types = tuple([self.data.dtype.fields[f][0] for f in self.fields])
-
+        if self._fields is not None:
+            self._types = tuple([self.data.dtype.fields[f][0] for f in self.fields])
+        else:
+            self._fields = ('',)
+            self._types = (self._dtype,)
 
 
     # properties
@@ -65,22 +68,34 @@ class PointList(Node):
     def types(self):
         return self._types
 
+    def __len__(self):
+        return np.atleast_1d(self.data).shape[0]
     @property
     def length(self):
-        return np.atleast_1d(self.data).shape[0]
-
+        return len(self)
 
 
     ## Add, remove, sort data
+
+    def __add__(self, data):
+        """
+        Append a numpy structured array and return the concatenated pointlist.
+        The dtypes must agree.
+        """
+        assert self.dtype == data.dtype, "Error: dtypes must agree"
+        if isinstance(data,PointList):
+            data = data.data
+        ans = np.append(self.data, data)
+        return PointList(
+            name = self.name,
+            data = ans
+        )
 
     def add(self, data):
         """
         Appends a numpy structured array. Its dtypes must agree with the existing data.
         """
-        assert self.dtype == data.dtype, "Error: dtypes must agree"
-        if isinstance(data,PointList):
-            data = data.data
-        self.data = np.append(self.data, data)
+        self.data = (self + data).data
 
     def remove(self, mask):
         """ Removes points wherever mask==True

@@ -41,7 +41,11 @@ class PointListArray(Node):
 
         self.dtype = np.dtype(dtype)
         self.fields = self.dtype.names
-        self.types = tuple([self.dtype.fields[f][0] for f in self.fields])
+        if self.fields is not None:
+            self.types = tuple([self.dtype.fields[f][0] for f in self.fields])
+        else:
+            self.fields = ('',)
+            self.types = (dtype,)
 
 
         # Populate with empty PointLists
@@ -50,15 +54,6 @@ class PointListArray(Node):
 
 
     ## get/set pointlists
-
-    def get_pointlist(self, i, j, name=None):
-        """
-        Returns the pointlist at i,j
-        """
-        pl = self._pointlists[i][j]
-        if name is not None:
-            pl = pl.copy(name=name)
-        return pl
 
     def __getitem__(self, tup):
         l = len(tup) if isinstance(tup,tuple) else 1
@@ -70,6 +65,15 @@ class PointListArray(Node):
         assert(l==2), f"Expected 2 slice values, recieved {l}"
         assert(pointlist.fields == self.fields), "fields must match"
         self._pointlists[tup[0]][tup[1]] = pointlist
+
+    def get_pointlist(self, i, j, name=None):
+        """
+        Returns the pointlist at i,j
+        """
+        pl = self._pointlists[i][j]
+        if name is not None:
+            pl = pl.copy(name=name)
+        return pl
 
 
 
