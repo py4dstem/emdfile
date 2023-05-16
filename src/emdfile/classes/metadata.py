@@ -103,30 +103,30 @@ class Metadata:
             # None
             if v is None:
                 v = "_None"
-                v = np.string_(v)  # convert to byte string
+                v = v.encode('utf-8')  # convert to byte string
                 dset = grp.create_dataset(k, data=v)
-                dset.attrs['type'] = np.string_('None')
+                dset.attrs['type'] = 'None'.encode('utf-8')
 
             # strings
             elif isinstance(v, str):
-                v = np.string_(v)  # convert to byte string
+                v = v.encode('utf-8')  # convert to byte string
                 dset = grp.create_dataset(k, data=v)
-                dset.attrs['type'] = np.string_('string')
+                dset.attrs['type'] = 'string'.encode('utf-8')
 
             # bools
             elif isinstance(v, bool):
                 dset = grp.create_dataset(k, data=v, dtype=bool)
-                dset.attrs['type'] = np.string_('bool')
+                dset.attrs['type'] = 'bool'.encode('utf-8')
 
             # numbers
             elif isinstance(v, Number):
                 dset = grp.create_dataset(k, data=v, dtype=type(v))
-                dset.attrs['type'] = np.string_('number')
+                dset.attrs['type'] = 'number'.encode('utf-8')
 
             # arrays
             elif isinstance(v, np.ndarray):
                 dset = grp.create_dataset(k, data=v, dtype=v.dtype)
-                dset.attrs['type'] = np.string_('array')
+                dset.attrs['type'] = 'array'.encode('utf-8')
 
             # tuples
             elif isinstance(v, tuple):
@@ -134,12 +134,12 @@ class Metadata:
                 # of numbers
                 if isinstance(v[0], Number):
                     dset = grp.create_dataset(k, data=v)
-                    dset.attrs['type'] = np.string_('tuple')
+                    dset.attrs['type'] = 'tuple'.encode('utf-8')
 
                 # of tuples
                 elif any([isinstance(v[i], tuple) for i in range(len(v))]):
                     dset_grp = grp.create_group(k)
-                    dset_grp.attrs['type'] = np.string_('tuple_of_tuples')
+                    dset_grp.attrs['type'] = 'tuple_of_tuples'.encode('utf-8')
                     dset_grp.attrs['length'] = len(v)
                     for i,x in enumerate(v):
                         dset_grp.create_dataset(
@@ -149,7 +149,7 @@ class Metadata:
                 # of arrays
                 elif isinstance(v[0], np.ndarray):
                     dset_grp = grp.create_group(k)
-                    dset_grp.attrs['type'] = np.string_('tuple_of_arrays')
+                    dset_grp.attrs['type'] = 'tuple_of_arrays'.encode('utf-8')
                     dset_grp.attrs['length'] = len(v)
                     for i,ar in enumerate(v):
                         dset_grp.create_dataset(
@@ -160,12 +160,12 @@ class Metadata:
                 # of strings
                 elif isinstance(v[0], str):
                     dset_grp = grp.create_group(k)
-                    dset_grp.attrs['type'] = np.string_('tuple_of_strings')
+                    dset_grp.attrs['type'] = 'tuple_of_strings'.encode('utf-8')
                     dset_grp.attrs['length'] = len(v)
                     for i,s in enumerate(v):
                         dset_grp.create_dataset(
                             str(i),
-                            data=np.string_(s))
+                            data=s.encode('utf-8'))
 
                 else:
                     er = f"Metadata only supports writing tuples with numeric and array-like arguments; found type {type(v[0])}"
@@ -177,12 +177,12 @@ class Metadata:
                 # of numbers
                 if isinstance(v[0], Number):
                     dset = grp.create_dataset(k, data=v)
-                    dset.attrs['type'] = np.string_('list')
+                    dset.attrs['type'] = 'list'.encode('utf-8')
 
                 # of arrays
                 elif isinstance(v[0], np.ndarray):
                     dset_grp = grp.create_group(k)
-                    dset_grp.attrs['type'] = np.string_('list_of_arrays')
+                    dset_grp.attrs['type'] = 'list_of_arrays'.encode('utf-8')
                     dset_grp.attrs['length'] = len(v)
                     for i,ar in enumerate(v):
                         dset_grp.create_dataset(
@@ -193,12 +193,12 @@ class Metadata:
                 # of strings
                 elif isinstance(v[0], str):
                     dset_grp = grp.create_group(k)
-                    dset_grp.attrs['type'] = np.string_('list_of_strings')
+                    dset_grp.attrs['type'] = 'list_of_strings'.encode('utf-8')
                     dset_grp.attrs['length'] = len(v)
                     for i,s in enumerate(v):
                         dset_grp.create_dataset(
                             str(i),
-                            data=np.string_(s))
+                            data=s.encode('utf-8'))
 
                 else:
                     er = f"Metadata only supports writing lists with numeric and array-like arguments; found type {type(v[0])}"
