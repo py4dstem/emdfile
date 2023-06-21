@@ -234,7 +234,7 @@ class Metadata:
 
             # get type
             try:
-                t = group[k].attrs['type'].decode('utf-8')
+                t = group[k].attrs['type']
             except KeyError:
                 raise Exception(f"unrecognized Metadata value type {type(v)}")
 
