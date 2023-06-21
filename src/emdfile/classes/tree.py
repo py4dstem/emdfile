@@ -586,31 +586,6 @@ class Root(Node):
 
 
 
-class RootedNode:
-
-    """
-    RootedNodes are nodes that are required to have a root. When __init__
-    is run, if a root doesn't already exist, it creates one with its own
-    name and attaches to it.
-    """
-
-    def __init__(self):
-        assert(hasattr(self,'root')), "RootedNode must already be initialized as a Node"
-        if self.root is None:
-            root = Root( name = self.name )
-            root.add_to_tree( self )
-
-
-    def _add_root_links(self,node):
-        """
-        This method is run while reading from a file, after a new instance has
-        been created and grafted from it's own root onto the tree from its H5
-        file of origin. This is useful for linking to other data/metadata
-        in the tree, which are not available earlier in the read process (and
-        which may need to be overwritted because they're obligate attrs which
-        were generated in initialization)
-        """
-        pass
 
 
 

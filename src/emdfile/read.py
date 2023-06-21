@@ -12,7 +12,6 @@ import warnings
 from emdfile.classes import (
     Root,
     Node,
-    RootedNode,
     Metadata
 )
 from emdfile.classes.utils import (
@@ -279,12 +278,7 @@ def _populate_tree(node,group,count=0):
         #print(f"Reading group {group[key].name}")
         new_node = _read_single_node(group[key])
         count += 1
-        # Handle RootedNodes, which need to be grafted rather than added
-        if isinstance(new_node,RootedNode):
-            new_node.graft(node)
-            new_node._add_root_links(node)
-        else:
-            node.add_to_tree(new_node)
+        node.add_to_tree(new_node)
         _populate_tree(
             new_node,
             group[key],

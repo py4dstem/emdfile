@@ -6,7 +6,6 @@ from emdfile.classes import (
     Metadata,
     Node,
     Root,
-    RootedNode,
     Array,
     PointList,
     PointListArray,
