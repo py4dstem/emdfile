@@ -228,7 +228,7 @@ def write(
     added_a_root = False
     if data._root is None:
         added_a_root = True
-        root = Root(name=data.name)
+        root = Root(name=data.name+"_root")
         root.add_to_tree(data)
     else:
         # get the root

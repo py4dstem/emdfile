@@ -219,10 +219,15 @@ class Node:
         else:
             return self.root._branch[name]
 
-    def graft(self,node,merge_metadata=True):
+    def _graft(self,node,merge_metadata=True):
         """
-        Moves a branch from one tree, starting at this node,
-        onto another tree at target `node`.
+        Moves the branch beginning at this node onto another tree at
+        targed point `node`.
+
+        This is the reverse of the behavior of self.graft(node), which moves
+        the branch on some other tree beginning at `node` onto this tree
+        starting at this node. In other words, self.graft() grafts onto self,
+        while self._graft() grafts from self.
 
         Accepts:
             node (Node):
@@ -232,7 +237,7 @@ class Node:
                 the new root.
 
         Returns:
-            (Node) the new tree's root node
+            (Node) the root node of the receiving tree
         """
         assert(self.root is not None), "Can't graft an unrooted node; try using .tree(add=node) instead."
         assert(node.root is not None), "Can't graft onto an unrooted node"
@@ -267,8 +272,6 @@ class Node:
                 # remove upstream connections
                 del(upstream_node._branch[k])
 
-#                upstream_node.tree(k).graft(node, merge_metadata=False)
-
 
         # add old root metadata to this node
         assert(merge_metadata in [True,False,'copy'])
@@ -285,6 +288,27 @@ class Node:
                 node.root.metadata = old_root.metadata[key].copy()
         # return
         return node.root
+
+
+    def graft(self,node,merge_metadata=True):
+        """
+        Moves the branch beginning node onto this tree at this node.
+
+        For the reverse (i.e. grafting from this tree onto another tree)
+        either use that tree's .graft method, or use this tree's ._graft.
+
+        Accepts:
+            node (Node):
+            merge_metadata (True, False, or 'copy'): if True adds the old root's
+                metadata to the new root; if False adds no metadata to the new
+                root; if 'copy' adds copies of all metadata from the old root to
+                the new root.
+
+        Returns:
+            (Node) this tree's root node
+        """
+        return node._graft(self)
+
 
     def cut_from_tree(self,root_metadata=True):
         """
@@ -305,7 +329,7 @@ class Node:
             (Node) the new root node
         """
         new_root = Root( name=self.root.name+'_cut_'+self.name)
-        return self.graft(new_root,merge_metadata=root_metadata)
+        return self._graft(new_root,merge_metadata=root_metadata)
 
 
     def tree(
@@ -325,7 +349,7 @@ class Node:
             >>> .tree(cut=True)     # remove/return a branch, keep root metadata
             >>> .tree(cut=False)    # remove/return a branch, discard root md
             >>> .tree(cut='copy')   # remove/return a branch, copy root metadata
-            >>> .tree(graft=node)   # remove/graft a branch, keep root metadata
+            >>> .tree(graft=node)   # remove/graft a branch, keeping root metadata
             >>> .tree(graft=(node,True))    # as above
             >>> .tree(graft=(node,False))   # as above, discard root metadata
             >>> .tree(graft=(node,'copy'))  # as above, copy root metadata

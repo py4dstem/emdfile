@@ -324,9 +324,12 @@ class TestTree(TreeBuilder):
         """
         # make a new tree to graft onto
         new_root = self.pl4.tree(cut=True)
-        # graft from the old tree to the new one
-        self.pla.tree(graft=self.pl4)
-        assert(new_root.tree('pointlist4/pointlistarray/pointlist') == self.pl)
+        # graft
+        self.pla.tree( graft=new_root.tree('pointlist4') )
+        # check
+        data = self.root.tree('array/pointlistarray/pointlist4')
+        assert(isinstance(data,PointList))
+        assert(data == self.pl4)
 
     def test_graft2(self):
         """
@@ -334,9 +337,14 @@ class TestTree(TreeBuilder):
         """
         # make a new tree to graft onto
         new_root = self.pl4.tree(cut=True)
-        # graft from the old tree to the new one
-        self.pla.graft(self.pl4) # alt syntax
-        assert(new_root.tree('pointlist4/pointlistarray/pointlist') == self.pl)
+        # graft
+        self.pla.graft( new_root.tree('pointlist4') )
+        # check
+        data = self.root.tree('array/pointlistarray/pointlist4')
+        assert(isinstance(data,PointList))
+        assert(data == self.pl4)
+
+
 
     def test_graft3(self):
         """
@@ -344,9 +352,13 @@ class TestTree(TreeBuilder):
         """
         # make a new tree to graft onto
         new_root = self.pl4.tree(cut=True)
-        # graft from the old tree to the new one
-        self.pla.tree(graft=(self.pl4,True)) # alt syntax
-        assert(new_root.tree('pointlist4/pointlistarray/pointlist') == self.pl)
+        # graft
+        self.pla.tree( graft=(new_root.tree('pointlist4'),True) )
+        # check
+        data = self.root.tree('array/pointlistarray/pointlist4')
+        assert(isinstance(data,PointList))
+        assert(data == self.pl4)
+
 
 
 
