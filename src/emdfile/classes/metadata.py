@@ -235,6 +235,8 @@ class Metadata:
             # get type
             try:
                 t = group[k].attrs['type']
+                if isinstance(t,bytes):
+                    t = t.decode('utf-8')
             except KeyError:
                 raise Exception(f"unrecognized Metadata value type {type(v)}")
 

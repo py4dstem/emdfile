@@ -735,7 +735,7 @@ def _append_root_metadata(
         mdbundle_group = rootgroup['metadatabundle']
         for k in mdbundle_group.keys():
             if "emd_group_type" in mdbundle_group[k].attrs.keys():
-                if mdbundle_group[k].attrs["emd_group_keys"] == "metadata":
+                if mdbundle_group[k].attrs["emd_group_type"] == "metadata":
                     metadata_groups.append(k)
     # loop
     for key in root._metadata:
