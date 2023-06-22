@@ -95,7 +95,29 @@ class Node:
 
         >>> .tree(arg)
 
-    for an arg of the appropriate type (bool, Node, and string).
+    for an arg of the appropriate type (bool, Node, and string), i.e.
+    in most cases, the keyword can be dropped.  So
+
+        >>> .tree()
+        >>> .tree(node)
+        >>> .tree(True)
+        >>> .tree('some/node')
+
+    will, respectively, print the tree from the current node to screen,
+    add the node `node` to the tree, pring the tree from the root node
+    to screen, and return the node at the emdpath 'some/node'.
+
+    If a node needs to be added to a tree and it may or may not
+    already have its own root, calling
+
+        >>> .tree(add=node, force=True)
+
+    or
+
+        >>> .tree(node, force=True)
+
+    will add the node to the tree, using a simple add if node has no
+    root, and grafting it if it does have a root.
 
 
     METADATA
@@ -205,6 +227,19 @@ class Node:
         self._branch[node.name] = node
         node._treepath = self._treepath+'/'+node.name
 
+    def force_add_to_tree(self,node):
+        """
+        Add node `node` as a child of the current node, whether or not
+        `node` is rooted.  If it's unrooted, performs a simple add. If
+        it is rooted, performs a graft, excluding the root metadata
+        from `node`.
+        """
+        try:
+            self.add_to_tree(node)
+        except AssertionError:
+            self.graft(node, merge_metadata=False)
+
+
     def get_from_tree(self,name):
         """
         Finds and returns an object from an EMD tree using the string
@@ -307,7 +342,10 @@ class Node:
         Returns:
             (Node) this tree's root node
         """
-        return node._graft(self)
+        return node._graft(
+            self,
+            merge_metadata=merge_metadata
+        )
 
 
     def cut_from_tree(self,root_metadata=True):
@@ -366,7 +404,10 @@ class Node:
             self.show_tree(root=arg)
             return
         elif isinstance(arg,Node):
-            self.add_to_tree(arg)
+            if 'force' in kwargs:
+                self.force_add_to_tree(arg)
+            else:
+                self.add_to_tree(arg)
             return
         elif isinstance(arg,str):
             return self.get_from_tree(arg)

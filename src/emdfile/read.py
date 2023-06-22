@@ -225,13 +225,13 @@ def read(
             # read the node
             node = _read_single_node(nodegroup)
             # build the tree and return
-            root.add_to_tree(node)
+            root.force_add_to_tree(node)
 
         # ...if a branch was requested
         elif tree is True:
             # read source node and add to tree
             node = _read_single_node(nodegroup)
-            root.add_to_tree(node)
+            root.force_add_to_tree(node)
             # build the tree
             _populate_tree(node,nodegroup)
 
@@ -278,7 +278,7 @@ def _populate_tree(node,group,count=0):
         #print(f"Reading group {group[key].name}")
         new_node = _read_single_node(group[key])
         count += 1
-        node.add_to_tree(new_node)
+        node.force_add_to_tree(new_node)
         _populate_tree(
             new_node,
             group[key],
