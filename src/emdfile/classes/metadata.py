@@ -97,116 +97,129 @@ class Metadata:
         grp.attrs.create("emd_group_type","metadata")
         grp.attrs.create("python_class",self.__class__.__name__)
 
-        # Save data
+        # Loop + save
         for k,v in self._params.items():
+            self._save_item(k,v,grp)
 
-            # None
-            if v is None:
-                v = "_None"
-                v = v.encode('utf-8')  # convert to byte string
+
+    def _save_item(self,k,v,grp):
+        """
+        For some (key, value, group), saves the piece of metadata to group.
+        """
+        dict
+        if isinstance(v,dict):
+            _grp = grp.create_group(k)
+            _grp.attrs['type'] = 'dict'
+            for _k,_v in v.items():
+                self._save_item(_k,_v,_grp)
+
+        # None
+        elif v is None:
+            v = "_None"
+            v = v.encode('utf-8')  # convert to byte string
+            dset = grp.create_dataset(k, data=v)
+            dset.attrs['type'] = 'None'.encode('utf-8')
+
+        # strings
+        elif isinstance(v, str):
+            v = v.encode('utf-8')  # convert to byte string
+            dset = grp.create_dataset(k, data=v)
+            dset.attrs['type'] = 'string'.encode('utf-8')
+
+        # bools
+        elif isinstance(v, bool):
+            dset = grp.create_dataset(k, data=v, dtype=bool)
+            dset.attrs['type'] = 'bool'.encode('utf-8')
+
+        # numbers
+        elif isinstance(v, Number):
+            dset = grp.create_dataset(k, data=v, dtype=type(v))
+            dset.attrs['type'] = 'number'.encode('utf-8')
+
+        # arrays
+        elif isinstance(v, np.ndarray):
+            dset = grp.create_dataset(k, data=v, dtype=v.dtype)
+            dset.attrs['type'] = 'array'.encode('utf-8')
+
+        # tuples
+        elif isinstance(v, tuple):
+
+            # of numbers
+            if isinstance(v[0], Number):
                 dset = grp.create_dataset(k, data=v)
-                dset.attrs['type'] = 'None'.encode('utf-8')
+                dset.attrs['type'] = 'tuple'.encode('utf-8')
 
-            # strings
-            elif isinstance(v, str):
-                v = v.encode('utf-8')  # convert to byte string
-                dset = grp.create_dataset(k, data=v)
-                dset.attrs['type'] = 'string'.encode('utf-8')
+            # of tuples
+            elif any([isinstance(v[i], tuple) for i in range(len(v))]):
+                dset_grp = grp.create_group(k)
+                dset_grp.attrs['type'] = 'tuple_of_tuples'.encode('utf-8')
+                dset_grp.attrs['length'] = len(v)
+                for i,x in enumerate(v):
+                    dset_grp.create_dataset(
+                        str(i),
+                        data=x)
 
-            # bools
-            elif isinstance(v, bool):
-                dset = grp.create_dataset(k, data=v, dtype=bool)
-                dset.attrs['type'] = 'bool'.encode('utf-8')
+            # of arrays
+            elif isinstance(v[0], np.ndarray):
+                dset_grp = grp.create_group(k)
+                dset_grp.attrs['type'] = 'tuple_of_arrays'.encode('utf-8')
+                dset_grp.attrs['length'] = len(v)
+                for i,ar in enumerate(v):
+                    dset_grp.create_dataset(
+                        str(i),
+                        data=ar,
+                        dtype=ar.dtype)
 
-            # numbers
-            elif isinstance(v, Number):
-                dset = grp.create_dataset(k, data=v, dtype=type(v))
-                dset.attrs['type'] = 'number'.encode('utf-8')
-
-            # arrays
-            elif isinstance(v, np.ndarray):
-                dset = grp.create_dataset(k, data=v, dtype=v.dtype)
-                dset.attrs['type'] = 'array'.encode('utf-8')
-
-            # tuples
-            elif isinstance(v, tuple):
-
-                # of numbers
-                if isinstance(v[0], Number):
-                    dset = grp.create_dataset(k, data=v)
-                    dset.attrs['type'] = 'tuple'.encode('utf-8')
-
-                # of tuples
-                elif any([isinstance(v[i], tuple) for i in range(len(v))]):
-                    dset_grp = grp.create_group(k)
-                    dset_grp.attrs['type'] = 'tuple_of_tuples'.encode('utf-8')
-                    dset_grp.attrs['length'] = len(v)
-                    for i,x in enumerate(v):
-                        dset_grp.create_dataset(
-                            str(i),
-                            data=x)
-
-                # of arrays
-                elif isinstance(v[0], np.ndarray):
-                    dset_grp = grp.create_group(k)
-                    dset_grp.attrs['type'] = 'tuple_of_arrays'.encode('utf-8')
-                    dset_grp.attrs['length'] = len(v)
-                    for i,ar in enumerate(v):
-                        dset_grp.create_dataset(
-                            str(i),
-                            data=ar,
-                            dtype=ar.dtype)
-
-                # of strings
-                elif isinstance(v[0], str):
-                    dset_grp = grp.create_group(k)
-                    dset_grp.attrs['type'] = 'tuple_of_strings'.encode('utf-8')
-                    dset_grp.attrs['length'] = len(v)
-                    for i,s in enumerate(v):
-                        dset_grp.create_dataset(
-                            str(i),
-                            data=s.encode('utf-8'))
-
-                else:
-                    er = f"Metadata only supports writing tuples with numeric and array-like arguments; found type {type(v[0])}"
-                    raise Exception(er)
-
-            # lists
-            elif isinstance(v, list):
-
-                # of numbers
-                if isinstance(v[0], Number):
-                    dset = grp.create_dataset(k, data=v)
-                    dset.attrs['type'] = 'list'.encode('utf-8')
-
-                # of arrays
-                elif isinstance(v[0], np.ndarray):
-                    dset_grp = grp.create_group(k)
-                    dset_grp.attrs['type'] = 'list_of_arrays'.encode('utf-8')
-                    dset_grp.attrs['length'] = len(v)
-                    for i,ar in enumerate(v):
-                        dset_grp.create_dataset(
-                            str(i),
-                            data=ar,
-                            dtype=ar.dtype)
-
-                # of strings
-                elif isinstance(v[0], str):
-                    dset_grp = grp.create_group(k)
-                    dset_grp.attrs['type'] = 'list_of_strings'.encode('utf-8')
-                    dset_grp.attrs['length'] = len(v)
-                    for i,s in enumerate(v):
-                        dset_grp.create_dataset(
-                            str(i),
-                            data=s.encode('utf-8'))
-
-                else:
-                    er = f"Metadata only supports writing lists with numeric and array-like arguments; found type {type(v[0])}"
-                    raise Exception(er)
+            # of strings
+            elif isinstance(v[0], str):
+                dset_grp = grp.create_group(k)
+                dset_grp.attrs['type'] = 'tuple_of_strings'.encode('utf-8')
+                dset_grp.attrs['length'] = len(v)
+                for i,s in enumerate(v):
+                    dset_grp.create_dataset(
+                        str(i),
+                        data=s.encode('utf-8'))
 
             else:
-                er = f"Metadata supports writing numbers, bools, strings, arrays, tuples of numbers or arrays, and lists of numbers or arrays. Found an unsupported type {type(v[0])}"
+                er = f"Metadata only supports writing tuples with numeric and array-like arguments; found type {type(v[0])}"
                 raise Exception(er)
+
+        # lists
+        elif isinstance(v, list):
+
+            # of numbers
+            if isinstance(v[0], Number):
+                dset = grp.create_dataset(k, data=v)
+                dset.attrs['type'] = 'list'.encode('utf-8')
+
+            # of arrays
+            elif isinstance(v[0], np.ndarray):
+                dset_grp = grp.create_group(k)
+                dset_grp.attrs['type'] = 'list_of_arrays'.encode('utf-8')
+                dset_grp.attrs['length'] = len(v)
+                for i,ar in enumerate(v):
+                    dset_grp.create_dataset(
+                        str(i),
+                        data=ar,
+                        dtype=ar.dtype)
+
+            # of strings
+            elif isinstance(v[0], str):
+                dset_grp = grp.create_group(k)
+                dset_grp.attrs['type'] = 'list_of_strings'.encode('utf-8')
+                dset_grp.attrs['length'] = len(v)
+                for i,s in enumerate(v):
+                    dset_grp.create_dataset(
+                        str(i),
+                        data=s.encode('utf-8'))
+
+            else:
+                er = f"Metadata only supports writing lists with numeric and array-like arguments; found type {type(v[0])}"
+                raise Exception(er)
+
+        else:
+            er = f"Metadata supports writing numbers, bools, strings, arrays, tuples of numbers or arrays, and lists of numbers or arrays. Found an unsupported type {type(v[0])}"
+            raise Exception(er)
 
 
     # read
@@ -228,107 +241,130 @@ class Metadata:
         assert("emd_group_type" in group.attrs.keys()), er
         assert(group.attrs["emd_group_type"] == "metadata"), er
 
-        # Get data
+        # Loop and get data
         data = {}
-        for k,v in group.items():
-
-            # get type
-            try:
-                t = group[k].attrs['type']
-                if isinstance(t,bytes):
-                    t = t.decode('utf-8')
-            except KeyError:
-                raise Exception(f"unrecognized Metadata value type {type(v)}")
-
-            # None
-            if t == 'None':
-                v = None
-
-            # strings
-            elif t == 'string':
-                v = v[...].item()
-                v = v.decode('utf-8')
-                v = v if v != "_None" else None
-
-            # numbers
-            elif t == 'number':
-                v = v[...].item()
-
-            # bools
-            elif t == 'bool':
-                v = v[...].item()
-
-            # array
-            elif t == 'array':
-                v = np.array(v)
-
-            # tuples of numbers
-            elif t == 'tuple':
-                v = tuple(v[...])
-
-            # tuples of arrays
-            elif t == 'tuple_of_arrays':
-                L = group[k].attrs['length']
-                tup = []
-                for l in range(L):
-                    tup.append(np.array(v[str(l)]))
-                v = tuple(tup)
-
-            # tuples of tuples
-            elif t == 'tuple_of_tuples':
-                L = group[k].attrs['length']
-                tup = []
-                for l in range(L):
-                    x = v[str(l)][...]
-                    if x.ndim == 0:
-                        x = x.item()
-                    else:
-                        x = tuple(x)
-                    tup.append(x)
-                v = tuple(tup)
-
-            # tuples of strings
-            elif t == 'tuple_of_strings':
-                L = group[k].attrs['length']
-                tup = []
-                for l in range(L):
-                    s = v[str(l)][...].item().decode('utf-8')
-                    tup.append(s)
-                v = tuple(tup)
-
-            # lists of numbers
-            elif t == 'list':
-                v = list(v[...])
-
-            # lists of arrays
-            elif t == 'list_of_arrays':
-                L = group[k].attrs['length']
-                _list = []
-                for l in range(L):
-                    _list.append(np.array(v[str(l)]))
-                v = _list
-
-            # list of strings
-            elif t == 'list_of_strings':
-                L = group[k].attrs['length']
-                _list = []
-                for l in range(L):
-                    s = v[str(l)][...].item().decode('utf-8')
-                    _list.append(s)
-                v = _list
-
-            else:
-                raise Exception(f"unrecognized Metadata value type {t}")
-
-
-            # add data
-            data[k] = v
-
+        cls._read_items(group,data)
 
         # make Metadata instance, add data, and return
         md = cls(basename(group.name))
         md._params.update(data)
         return md
+
+
+    @classmethod
+    def _read_items(cls, group, data):
+        """
+        For some (group,dict), reads the metadata from group, adding
+        items into dict. Nothing is returned.
+        """
+        for k,v in group.items():
+            data[k] = cls._read_item(k,v,group)
+
+    @classmethod
+    def _read_item(cls, k, v, group):
+        """
+        For some (key,value,group), reads and returns the piece of metadata
+        from group.
+        """
+        # Get type
+        try:
+            t = group[k].attrs['type']
+            if isinstance(t,bytes):
+                t = t.decode('utf-8')
+        except KeyError:
+            raise Exception(f"unrecognized Metadata value type {type(v)}")
+
+        # Read by type...
+
+        # dict
+        if t == 'dict':
+            data = {}
+            grp = group[k]
+            cls._read_items(grp,data)
+            v = data
+
+        # None
+        elif t == 'None':
+            v = None
+
+        # strings
+        elif t == 'string':
+            v = v[...].item()
+            v = v.decode('utf-8')
+            v = v if v != "_None" else None
+
+        # numbers
+        elif t == 'number':
+            v = v[...].item()
+
+        # bools
+        elif t == 'bool':
+            v = v[...].item()
+
+        # array
+        elif t == 'array':
+            v = np.array(v)
+
+        # tuples of numbers
+        elif t == 'tuple':
+            v = tuple(v[...])
+
+        # tuples of arrays
+        elif t == 'tuple_of_arrays':
+            L = group[k].attrs['length']
+            tup = []
+            for l in range(L):
+                tup.append(np.array(v[str(l)]))
+            v = tuple(tup)
+
+        # tuples of tuples
+        elif t == 'tuple_of_tuples':
+            L = group[k].attrs['length']
+            tup = []
+            for l in range(L):
+                x = v[str(l)][...]
+                if x.ndim == 0:
+                    x = x.item()
+                else:
+                    x = tuple(x)
+                tup.append(x)
+            v = tuple(tup)
+
+        # tuples of strings
+        elif t == 'tuple_of_strings':
+            L = group[k].attrs['length']
+            tup = []
+            for l in range(L):
+                s = v[str(l)][...].item().decode('utf-8')
+                tup.append(s)
+            v = tuple(tup)
+
+        # lists of numbers
+        elif t == 'list':
+            v = list(v[...])
+
+        # lists of arrays
+        elif t == 'list_of_arrays':
+            L = group[k].attrs['length']
+            _list = []
+            for l in range(L):
+                _list.append(np.array(v[str(l)]))
+            v = _list
+
+        # list of strings
+        elif t == 'list_of_strings':
+            L = group[k].attrs['length']
+            _list = []
+            for l in range(L):
+                s = v[str(l)][...].item().decode('utf-8')
+                _list.append(s)
+            v = _list
+
+        else:
+            raise Exception(f"unrecognized Metadata value type {t}")
+
+        # return
+        return v
 
 
 

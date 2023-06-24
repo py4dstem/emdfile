@@ -24,8 +24,7 @@ def write(
     tree = True,
     ):
     """
-    Saves data to a .h5 file at filepath. Specific behavior depends on the
-    `data`, `mode`, `tree`, and `emdpath` arguments.
+    Saves data to a .h5 file at filepath.
 
     Calling
 
@@ -166,6 +165,12 @@ def write(
         root = Root(name='root')
         md = Metadata(name='dictionary',data=data)
         root.metadata = md
+        data = root
+
+    # Metadata
+    elif isinstance(data, Metadata):
+        root = Root(name='root')
+        root.metadata = data
         data = root
 
     # for lists...
