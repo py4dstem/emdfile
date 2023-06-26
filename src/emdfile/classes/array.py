@@ -178,17 +178,15 @@ class Array(Node):
         self.data = data
         self.name = name
         self.units = units
-        self._dims = dims
-        self._dim_names = dim_names
-        self._dim_units = dim_units
 
+        ## For array stacks,
+        ## setup labels and N+1'th dimension
 
-        ## Handle array stacks
         if slicelabels is None:
             self.is_stack = False
+            self.slicelabels = None
         else:
             self.is_stack = True
-
             # Populate labels
             if slicelabels is True:
                 slicelabels = [f'array{i}' for i in range(self.depth)]
@@ -197,92 +195,65 @@ class Array(Node):
                     [f'array{i}' for i in range(len(slicelabels),self.depth)]))
             else:
                 slicelabels = slicelabels[:self.depth]
-            slicelabels = Labels(slicelabels)
-        self.slicelabels = slicelabels
+            self.slicelabels = Labels(slicelabels)
 
 
-        ## Set dim vectors
-        dim_in_pixels = np.zeros(self.rank, dtype=bool) # flag to help assign dim names and units
-        # if none were passed
-        if self._dims is None:
-            self._dims = [self._unpack_dim(1,self.shape[n]) for n in range(self.rank)]
-            dim_in_pixels[:] = True
+        ## Setup dim vectors
 
-        # if some but not all were passed
-        elif len(self._dims)<self.rank:
-            _dims = self._dims
-            N = len(_dims)
-            self._dims = []
-            for n in range(N):
-                dim = self._unpack_dim(_dims[n],self.shape[n])
-                self._dims.append(dim)
-            for n in range(N,self.rank):
-                self._dims.append(self._unpack_dim(1,self.shape[n]))
-                dim_in_pixels[n] = True
+        # set initial state
+        self._dims = tuple([None for i in range(self.rank)])
+        self._dim_units = tuple(['unknown' for i in range(self.rank)])
+        self._dim_names = tuple([f"dim{i}" for i in range(self.rank)])
 
-        # if all were passed
-        elif len(self._dims)==self.rank:
-            _dims = self._dims
-            self._dims = []
-            for n in range(self.rank):
-                dim = self._unpack_dim(_dims[n],self.shape[n])
-                self._dims.append(dim)
+        # expand dims, dim_units, and dim_names to lists of length = rank,
+        # padding with None if the lists are too short
 
-        # otherwise
+        # dims
+        if dims is None:
+            dims = [None for i in range(self.rank)]
         else:
-            raise Exception(f"too many dim vectors were passed - expected {self.rank}, received {len(self._dims)}")
+            assert(isinstance(dims,(list,tuple))), f"dims must be None or a list or tuple, not type {type(dims)}"
+            if len(dims) < (self.rank):
+                dims = list(dims) + [None for i in range(self.rank-len(dims))]
+            else:
+                dims = dims[:self.rank]
+        dim_in_pixels = np.zeros(self.rank, dtype=bool) # flag for dims in pixels
+        for idx in range(self.rank):
+            dim_in_pixels[idx] = (dims[idx] is None)
 
-
-        ## set dim vector names
-
-        # if none were passed
-        if self._dim_names is None:
-            self._dim_names = [f"dim{n}" for n in range(self.rank)]
-
-        # if some but not all were passed
-        elif len(self._dim_names)<self.rank:
-            N = len(self._dim_names)
-            self._dim_names = [name for name in self._dim_names] + \
-                             [f"dim{n}" for n in range(N,self.rank)]
-
-        # if all were passed
-        elif len(self._dim_names)==self.rank:
-            pass
-
-        # otherwise
+        if dim_units is None:
+            dim_units = [None for i in range(self.rank)]
         else:
-            raise Exception(f"too many dim names were passed - expected {self.rank}, received {len(self._dim_names)}")
+            assert(isinstance(dim_units,(list,tuple))), f"dim_units must be None or a list or tuple, not type {type(dim_units)}"
+            if len(dim_units) < (self.rank):
+                dim_units = list(dim_units) + [None for i in range(rank-len(dim_units))]
+            else:
+                dim_units = dim_units[:self.rank]
+        dim_units = np.array(dim_units)
+        dim_units[dim_in_pixels] = 'pixels'
+        dim_units = tuple(dim_units)
 
-
-        ## set dim vector units
-
-        # if none were passed
-        if self._dim_units is None:
-            self._dim_units = [['unknown','pixels'][int(i)] for i in dim_in_pixels]
-
-        # if some but not all were passed
-        elif len(self._dim_units)<self.rank:
-            N = len(self._dim_units)
-            self._dim_units = [units for units in self._dim_units] + \
-                             [['unknown','pixels'][int(dim_in_pixels[i])] for i in range(N,self.rank)]
-
-        # if all were passed
-        elif len(self._dim_units)==self.rank:
-            pass
-
-        # otherwise
+        if dim_names is None:
+            dim_names = [None for i in range(self.rank)]
         else:
-            raise Exception(f"too many dim units were passed - expected {self.rank}, received {len(self._dim_units)}")
+            assert(isinstance(dim_names,(list,tuple))), f"dim_names must be None or a list or tuple, not type {type(dim_names)}"
+            if len(dim_names) < (self.rank):
+                dim_names = list(dim_names) + [None for i in range(rank-len(dim_names))]
+            else:
+                dim_names = dim_names[:self.rank]
 
-        # make dim vector params immutable
-        self._dims = tuple(self._dims)
-        self._dim_units = tuple(self._dim_units)
-        self._dim_names = tuple(self._dim_names)
+        # set dims
+        for idx,(d,du,dn) in enumerate(zip(dims,dim_units,dim_names)):
+            self.set_dim(
+                idx,
+                dim = d,
+                units = du,
+                name = dn
+            )
 
 
 
-
-    # dim vector properties and methods
+    # dim vector setter/getter properties and methods
 
     @property
     def dims(self):
@@ -292,8 +263,8 @@ class Array(Node):
         """ Return the n'th dim vector
         """
         assert(isinstance(n,(int,np.integer))), f"Can't retrieve the {n}th dim vector - {n} must be an integer, not type {type(n)}."
-        assert(n < len(self._dims)), f"Can't retrieve the {n}th dim vector - {n} must be <= {len(self._dims)-1}"
-        return self._dims[n]
+        assert(n < self.rank), f"Can't retrieve the {n}th dim vector - {n} must be < {self.rank}"
+        return self.dims[n]
 
     # alias
     dim = get_dim
@@ -318,9 +289,11 @@ class Array(Node):
             name: (Optional, str):
         """
         assert(isinstance(n,(int,np.integer))), f"Can't set the {n}th dim vector - {n} must be an integer, not type {type(n)}."
-        assert(n < len(self._dims)), f"Can't set the {n}th dim vector - {n} must be <= {len(self._dims)-1}"
+        assert(n < self.rank), f"Can't set the {n}th dim vector - {n} must be < {self.rank}"
         length = self.shape[n]
+        # unpack dim, if a number or len 2 list were passed
         new_dim = self._unpack_dim(dim,length)
+        # set new dim
         self._dims = list(self._dims)
         self._dims[n] = new_dim
         self._dims = tuple(self._dims)
@@ -337,8 +310,8 @@ class Array(Node):
         """ Return the n'th dim vector units
         """
         assert(isinstance(n,(int,np.integer))), f"Can't retrieve the {n}th dim vector - {n} must be an integer, not type {type(n)}."
-        assert(n < len(self._dims)), f"Can't retrieve the {n}th dim vector - {n} must be <= {len(self._dims)-1}"
-        return self._dim_units[n]
+        assert(n < self.rank), f"Can't retrieve the {n}th dim vector - {n} must be < {self.rank}"
+        return self.dim_units[n]
 
     def set_dim_units(
         self,
@@ -353,7 +326,7 @@ class Array(Node):
             units (str): new units
         """
         assert(isinstance(n,(int,np.integer))), f"Can't set the {n}th dim vector - {n} must be an integer, not type {type(n)}."
-        assert(n < len(self._dims)), f"Can't set the {n}th dim vector - {n} must be <= {len(self._dims)-1}"
+        assert(n < self.rank), f"Can't set the {n}th dim vector - {n} must be < {self.rank}"
         self._dim_units = list(self._dim_units)
         self._dim_units[n] = units
         self._dim_units = tuple(self._dim_units)
@@ -366,8 +339,8 @@ class Array(Node):
         """ Get the n'th dim vector name
         """
         assert(isinstance(n,(int,np.integer))), f"Can't retrieve the {n}th dim vector - {n} must be an integer, not type {type(n)}."
-        assert(n < len(self._dims)), f"Can't retrieve the {n}th dim vector - {n} must be <= {len(self._dims)-1}"
-        return self._dim_names[n]
+        assert(n < self.rank), f"Can't retrieve the {n}th dim vector - {n} must be < {self.rank}"
+        return self.dim_names[n]
 
     def set_dim_name(
         self,
@@ -382,7 +355,7 @@ class Array(Node):
             name (str): new name
         """
         assert(isinstance(n,(int,np.integer))), f"Can't set the {n}th dim vector - {n} must be an integer, not type {type(n)}."
-        assert(n < len(self._dims)), f"Can't set the {n}th dim vector - {n} must be <= {len(self._dims)-1}"
+        assert(n < self.rank), f"Can't set the {n}th dim vector - {n} must be < {self.rank}"
         self._dim_names = list(self._dim_names)
         self._dim_names[n] = name
         self._dim_names = tuple(self._dim_names)
@@ -411,13 +384,17 @@ class Array(Node):
         Returns
             the unpacked dim vector
         """
+        # Expand None
+        if dim is None:
+            dim = 1
+
         # Expand single numbers
         if isinstance(dim,Number):
             dim = [0,dim]
 
         N = len(dim)
 
-        # for string dimensions:
+        # for string dimensions (used for stack arrays):
         if not isinstance(dim[0],Number):
             assert(N == length), f"For non-numerical dims, the dim vector length must match the array dimension length. Recieved a dim vector of length {N} for an array dimension length of {length}."
 
@@ -559,10 +536,9 @@ class Array(Node):
             dim = self.dims[n]
             name = self.dim_names[n]
             units = self.dim_units[n]
-            is_linear = self._dim_is_linear(dim,self.shape[n])
 
             # compress the dim vector if it's linear
-            if is_linear:
+            if self._dim_is_linear(dim,self.shape[n]):
                 dim = dim[:2]
 
             # write
@@ -584,11 +560,6 @@ class Array(Node):
                 data = dim
             )
             dset.attrs.create('name','_labels_')
-
-        # Return
-        return grp
-
-
 
 
     # read
