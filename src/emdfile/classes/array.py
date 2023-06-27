@@ -208,7 +208,7 @@ class Array(Node):
         # expand dims, dim_units, and dim_names to lists of length = rank,
         # padding with None if the lists are too short
 
-        # dims
+        # setup dims
         if dims is None:
             dims = [None for i in range(self.rank)]
         else:
@@ -217,16 +217,17 @@ class Array(Node):
                 dims = list(dims) + [None for i in range(self.rank-len(dims))]
             else:
                 dims = dims[:self.rank]
-        dim_in_pixels = np.zeros(self.rank, dtype=bool) # flag for dims in pixels
+        # set flag for if units are pixels
+        dim_in_pixels = np.zeros(self.rank, dtype=bool)
         for idx in range(self.rank):
-            dim_in_pixels[idx] = (dims[idx] is None)
+            dim_in_pixels[idx] = dims[idx] is None
 
         if dim_units is None:
-            dim_units = [None for i in range(self.rank)]
+            dim_units = ['unknown' for i in range(self.rank)]
         else:
             assert(isinstance(dim_units,(list,tuple))), f"dim_units must be None or a list or tuple, not type {type(dim_units)}"
             if len(dim_units) < (self.rank):
-                dim_units = list(dim_units) + [None for i in range(rank-len(dim_units))]
+                dim_units = list(dim_units) + ['unknown' for i in range(rank-len(dim_units))]
             else:
                 dim_units = dim_units[:self.rank]
         dim_units = np.array(dim_units)
@@ -234,15 +235,15 @@ class Array(Node):
         dim_units = tuple(dim_units)
 
         if dim_names is None:
-            dim_names = [None for i in range(self.rank)]
+            dim_names = [f"dim{i}" for i in range(self.rank)]
         else:
             assert(isinstance(dim_names,(list,tuple))), f"dim_names must be None or a list or tuple, not type {type(dim_names)}"
             if len(dim_names) < (self.rank):
-                dim_names = list(dim_names) + [None for i in range(rank-len(dim_names))]
+                dim_names = list(dim_names) + [f"dim{i+len(dim_names)}" for i in range(rank-len(dim_names))]
             else:
                 dim_names = dim_names[:self.rank]
 
-        # set dims
+        # set the dims
         for idx,(d,du,dn) in enumerate(zip(dims,dim_units,dim_names)):
             self.set_dim(
                 idx,
@@ -546,8 +547,9 @@ class Array(Node):
                 f"dim{n}",
                 data = dim
             )
-            dset.attrs.create('name',name)
-            dset.attrs.create('units',units)
+
+            dset.attrs.create('name',str(name))
+            dset.attrs.create('units',str(units))
 
         # Add stack dim vector, if present
         if self.is_stack:
@@ -560,6 +562,10 @@ class Array(Node):
                 data = dim
             )
             dset.attrs.create('name','_labels_')
+
+        # return
+        return grp
+
 
 
     # read

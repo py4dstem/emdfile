@@ -362,7 +362,140 @@ class TestTree(TreeBuilder):
 
 
 
-class TestTreeIO(TreeBuilder):
+class TestTreeWrite(TreeBuilder):
+
+    def setup_cls(cls):
+        cls._clear_files()
+
+    def teardown_cls(cls):
+        cls._clear_files()
+
+    def setup_method(self):
+        self._build_tree()
+
+    def teardown_method(self):
+        self._del_tree()
+
+    def teardown_cls(cls):
+        cls._clear_files()
+
+    def test_write_single_node(self):
+        save(
+            single_node_path,
+            self.ar,
+            tree = False,
+            mode = 'o'
+        )
+
+    def test_write_unrooted_node(self):
+        save(
+            unrooted_node_path,
+            self.ar_unrooted,
+            mode = 'o'
+        )
+        pass
+
+    def test_write_whole_tree(self):
+        print('Tree:')
+        self.root.tree(True)
+        print()
+        save(
+            whole_tree_path,
+            self.root,
+            tree = True,
+            mode = 'o'
+        )
+        pass
+
+    def test_write_h5_subtree(self):
+        """
+        Write a subtree to file
+        """
+        save(
+            subtree_path,
+            self.pl3,
+            tree = True,
+            mode = 'o'
+        )
+
+    def test_write_h5_subtree_noroot(self):
+        """
+        Write a subtree tree to file without it's root dataset
+        """
+        save(
+            subtree_noroot_path,
+            self.pl3,
+            tree = None,
+            mode = 'o'
+        )
+
+    def test_append_to_h5(self):
+        """
+        Append to an existing h5 file
+        """
+        save(
+            subtree_append_to_path,
+            self.ar,
+            tree = False,
+            mode = 'o'
+        )
+        save(
+            subtree_append_to_path,
+            self.ar2,
+            tree = True,
+            mode = 'a'
+        )
+        pass
+
+    def test_append_over_h5(self):
+        """
+        Append to an existing h5 file, overwriting a redundantly named object
+        """
+        save(
+            subtree_append_over_path,
+            self.ar,
+            tree = False,
+            mode = 'o'
+        )
+        save(
+            subtree_append_over_path,
+            self.ar2.root,
+            tree = True,
+            mode = 'ao'
+        )
+        pass
+
+    def _clear_files(self):
+        """
+        Delete h5 files which this test suite wrote
+        """
+        paths = [
+            single_node_path,
+            unrooted_node_path,
+            whole_tree_path,
+            subtree_path,
+            subtree_noroot_path,
+            subtree_append_to_path,
+            subtree_append_over_path
+        ]
+        for p in paths:
+            if exists(p):
+                remove(p)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class TestTreeRead(TreeBuilder):
 
     @classmethod
     def setup_class(cls):

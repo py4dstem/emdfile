@@ -319,10 +319,6 @@ def write(
                     rootgroup,
                     treepath
                 )
-                #print(treepath)
-                #print(data._treepath)
-                #print(where)
-                #print(where[0].name)
                 if where is False:
                     raise Exception(f"No node found at {emdpath} in the EMD tree called {rootname} - check your `emdpath`")
                 elif where[1] is False:
