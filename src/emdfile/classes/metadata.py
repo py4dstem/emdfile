@@ -144,8 +144,13 @@ class Metadata:
         # tuples
         elif isinstance(v, tuple):
 
+            # empty
+            if len(v) == 0:
+                dset = grp.create_dataset(k, data=v)
+                dset.attrs['type'] = 'tuple'.encode('utf-8')
+
             # of numbers
-            if isinstance(v[0], Number):
+            elif isinstance(v[0], Number):
                 dset = grp.create_dataset(k, data=v)
                 dset.attrs['type'] = 'tuple'.encode('utf-8')
 
@@ -187,8 +192,13 @@ class Metadata:
         # lists
         elif isinstance(v, list):
 
+            # empty
+            if len(v) == 0:
+                dset = grp.create_dataset(k, data=v)
+                dset.attrs['type'] = 'list'.encode('utf-8')
+
             # of numbers
-            if isinstance(v[0], Number):
+            elif isinstance(v[0], Number):
                 dset = grp.create_dataset(k, data=v)
                 dset.attrs['type'] = 'list'.encode('utf-8')
 

@@ -95,6 +95,17 @@ class TestMetadata:
         pass
 
 
+    def test_empty_lists_and_tups(self):
+        """
+        """
+        m = Metadata( name='metadata' )
+        m['x'] = ()
+        m['y'] = []
+        save(path, m)
+        n = read(path)
+        assert(n['x'] == ())
+        assert(n['y'] == [])
+
 
 
 
