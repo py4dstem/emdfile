@@ -148,10 +148,6 @@ def read(
 
     # get/check version
     v = _get_EMD_version(filepath)
-    if v != (1,0,0):
-        #raise Exception('oh dear')
-        pass
-
 
 
     # determine `emdpath` if it was left as None
@@ -275,7 +271,6 @@ def _populate_tree(node,group,count=0):
         EMD_data_group_types]
 
     for key in keys:
-        #print(f"Reading group {group[key].name}")
         new_node = _read_single_node(group[key])
         count += 1
         node.force_add_to_tree(new_node)
@@ -319,7 +314,6 @@ def _print_h5pyFile_tree(f, tablevel=0, linelevels=[], show_metadata=False):
         for idx in range(tablevel):
             l = '|' if idx+1 in linelevels else ' '
             string += '   '+l
-        #print(string)
         print(string+'---'+k)
         if i == N-1:
             linelevels.remove(tablevel)

@@ -181,7 +181,6 @@ class Array(Node):
 
         ## For array stacks,
         ## setup labels and N+1'th dimension
-
         if slicelabels is None:
             self.is_stack = False
             self.slicelabels = None
