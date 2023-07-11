@@ -266,8 +266,10 @@ class Node:
 
         Accepts:
             node (Node):
-            merge_metadata (True, False, or 'copy'): if True adds the old root's
-                metadata to the new root; if False adds no metadata to the new
+            merge_metadata (True, False, 'copy', or 'overwrite'): if True adds
+                the new root's metadata to the old root, skipping entries that
+                exist in both; overwrite is identical, but overwrites entries
+                that exist in both; if False adds no metadata to the new
                 root; if 'copy' adds copies of all metadata from the old root to
                 the new root.
 
@@ -309,11 +311,16 @@ class Node:
 
 
         # add old root metadata to this node
-        assert(merge_metadata in [True,False,'copy'])
+        assert(merge_metadata in [True,False,'copy','overwrite'])
         if merge_metadata is False:
             # add no root metadata
             pass
         elif merge_metadata is True:
+            # add old root metadata to new root
+            for key in old_root.metadata.keys():
+                if key not in node.root.metadata.keys():
+                    node.root.metadata = old_root.metadata[key]
+        elif merge_metadata == "overwrite":
             # add old root metadata to new root
             for key in old_root.metadata.keys():
                 node.root.metadata = old_root.metadata[key]
