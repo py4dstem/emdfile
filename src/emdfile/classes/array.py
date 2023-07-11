@@ -478,9 +478,6 @@ class Array(Node):
             string = f"{self.__class__.__name__}( A {self.rank}-dimensional array of shape {self.shape} called '{self.name}',"
             string += "\n"+space+"with dimensions:"
             string += "\n"
-            for n in range(self.rank):
-                string += "\n"+space+f"{self.dim_names[n]} = [{self.dims[n][0]},{self.dims[n][1]},...] {self.dim_units[n]}"
-            string += "\n)"
 
         else:
             space = ' '*len(self.__class__.__name__)+'  '
@@ -492,11 +489,18 @@ class Array(Node):
             string += "\n"
             string += "\n"
             string += "\n" + space + "The Array dimensions are:"
-            for n in range(self.rank):
-                string += "\n"+space+f"    {self.dim_names[n]} = [{self.dims[n][0]},{self.dims[n][1]},...] {self.dim_units[n]}"
-                if not self._dim_is_linear(self.dims[n],self.shape[n]):
-                    string += "  (*non-linear*)"
-            string += "\n)"
+
+        for n in range(self.rank):
+            if len(self.dims[n]) >= 2:
+                string += "\n"+space+f"    {self.dim_names[n]} = [{self.dims[n][0]},{self.dims[n][1]},{self.dims[n][2]},...] {self.dim_units[n]}"
+            elif len(self.dims[n]) == 1:
+                string += "\n"+space+f"    {self.dim_names[n]} = [{self.dims[n][0]}] {self.dim_units[n]}"
+            else:
+                string += "\n"+space+f"    {self.dim_names[n]} = [] {self.dim_units[n]}"
+            if not self._dim_is_linear(self.dims[n],self.shape[n]):
+                string += "  (*non-linear*)"
+        string += "\n)"
+
 
         return string
 
