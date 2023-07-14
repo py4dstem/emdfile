@@ -50,6 +50,26 @@ class TestArray():
         assert(array_equal(ar.data,ar2.data))
 
 
+    def test_Array_stackarray(self):
+
+        # make array
+        x = Array(np.zeros((3,5,6)),slicelabels=['a','b','c'])
+
+        # save
+        save(testpath,x,mode='o')
+
+        # read
+        y = read(testpath)
+
+        # compare
+        assert(x.depth == y.depth)
+        assert(x.rank == y.rank)
+        assert(x.shape == y.shape)
+        assert(x.slicelabels == y.slicelabels)
+
+
+
+
     def test_Array_dimvects(self):
 
         dims = (
@@ -152,6 +172,8 @@ class TestArray():
         assert(array_equal( ar['a'].data, ar2['a'].data ))
         assert(array_equal( ar['b'].data, ar2['b'].data ))
         assert(array_equal( ar['c'].data, ar2['c'].data ))
+
+
 
 
 
