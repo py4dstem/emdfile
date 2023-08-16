@@ -1,12 +1,7 @@
 # Read EMD v0.1 files
 
 import h5py
-import pathlib
-from os.path import exists, splitext, basename, dirname, join
-from typing import Union, Optional
-import warnings
-
-
+from emdfile.classes import Array
 
 
 def read_EMD_v0p1(
