@@ -20,7 +20,7 @@ from emdfile.classes.utils import (
 )
 
 # EMD 0.1 support
-from read_EMD_v0p1 import read_EMD_v0p1
+from emdfile.read_EMD_v0p1 import read_EMD_v0p1
 
 
 
@@ -146,8 +146,8 @@ def read(
     try:
         with h5py.File(filepath,'r') as f:
             pass
-        except OSError:
-            raise Exception(f"The file at {filepath} is not an HDF5 file!")
+    except OSError:
+        raise Exception(f"The file at {filepath} is not an HDF5 file!")
 
     # determine if the file is EMD 1.0
     # if not, try reading it as an EMD 0.1
