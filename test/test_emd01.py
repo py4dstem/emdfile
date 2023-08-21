@@ -31,13 +31,16 @@ class TestEMD01:
     
         @pytest.fixture
         def temp_file(self):
+            """Create an empty temporary file and return as a Path."""
             tt = tempfile.NamedTemporaryFile(mode='wb')
             tt.close()  # need to close the file to use it later
             return Path(tt.name)
         
         @pytest.fixture
         def _make_data(self, temp_file):
-            # Create a 0.1 (or 0.2?) version EMD
+            """Create a v0.1 (or 0.2?) version EMD using a temporary file. Returns a Path
+            to the file.
+            """
 
             data = np.random.rand(100,100)
 
@@ -61,7 +64,12 @@ class TestEMD01:
             return temp_file
         
         def test_make_data(self, _make_data):
+            """Test that the temporary data is created with the emd v0.1 format."""
             assert _make_data.exists()
             
             with h5py.File(_make_data,'r') as f0:
                 assert isinstance(f0['/data/test_data'], h5py.Group)
+        
+        def test_not_emd1(self, _make_data):
+            """Ensure it is not seen as a emd v1.0"""
+            assert not _is_EMD_file(_make_data)
