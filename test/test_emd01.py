@@ -45,7 +45,7 @@ class TestEMD01:
             to the file.
             """
             
-            data = np.random.rand(100, 100)
+            data, _ = np.mgrid[0:100, 0:100]
 
             with h5py.File(_temp_file, 'w') as f0:
                 f0.attrs['version_major'] = 0
@@ -80,7 +80,7 @@ class TestEMD01:
                 f0.create_group('/user')
                 f0.create_group('/sample')
                 for ii in range(2):
-                    data = np.random.rand(100, 100)
+                    data, _ = np.mgrid[0:100, 0:100]
                     group_name = f'test_data{ii}'
                     group_top = data_top.create_group(group_name)
                     group_top.attrs['emd_group_type'] = int(1)
@@ -99,7 +99,7 @@ class TestEMD01:
             to the file.
             """
             
-            data = np.random.rand(3, 100, 100)
+            data, _ = np.mgrid[0:100, 0:100]
 
             with h5py.File(_temp_file, 'w') as f0:
                 f0.attrs['version_major'] = 0
@@ -112,15 +112,15 @@ class TestEMD01:
                 group_top = data_top.create_group('test_data')
                 group_top.attrs['emd_group_type'] = int(1)
                 group_top.create_dataset('data', data=data)
-                dim1 = group_top.create_dataset('dim1', data=range(3))
+                dim1 = group_top.create_dataset('dim1', data=range(2))
                 dim1.attrs['name'] = 'Z'
                 dim1.attrs['units'] = 'pixels'
                 dim2 = group_top.create_dataset('dim2', data=range(100))
                 dim2.attrs['name'] = 'Y'
                 dim2.attrs['units'] = 'pixels'
-                dim2 = group_top.create_dataset('dim3', data=range(100))
-                dim2.attrs['name'] = 'X'
-                dim2.attrs['units'] = 'pixels'
+                dim3 = group_top.create_dataset('dim3', data=range(100))
+                dim3.attrs['name'] = 'X'
+                dim3.attrs['units'] = 'pixels'
             return _temp_file
         
         def test_make_data(self, _make_data):
@@ -148,3 +148,14 @@ class TestEMD01:
             """Read file with 3D data data sets"""
             new_emd = read_EMD_v0p1(_make_data_3D)
             print(new_emd)
+            
+#         def test_actual_data(self):
+#             import ncempy
+#             file_path = Path('/mnt/nvme1/percius/SrYbF/2022.11.16/5903/Acquisition_0007.emd')
+#             new_emd = read_EMD_v0p1(file_path)
+#             print(new_emd)
+            
+#             file_path = Path('/mnt/nvme1/percius/SrYbF/2022.11.16/5902/Rotation_0006.emd')
+#             new_emd = read_EMD_v0p1(file_path)
+#             print(new_emd)
+                    
