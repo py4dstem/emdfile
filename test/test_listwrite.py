@@ -212,8 +212,6 @@ class TestListWrite():
         Note that root2 should *not* contain array 5 in the saved file.
         """
 
-
-
         # make several arrays
         ar1 = emd.Array(
             data = np.array([[1,2],[3,4]]),
@@ -235,6 +233,19 @@ class TestListWrite():
             data = np.arange(30).reshape((2,3,5)),
             name = 'array5'
         )
+        ar6 = emd.Array(
+            data = np.ones((2,4)),
+            name = 'array6'
+        )
+        ar7 = emd.Array(
+            data = np.eye(5),
+            name = 'array7'
+        )
+        nparray = np.ones((2,3,2,3))
+        dic = {
+            'x' : 1,
+            'y' : True
+        }
 
         # add roots
         root1 = emd.Root(name='root1')
@@ -262,6 +273,24 @@ class TestListWrite():
             data = root2,
             mode = 'a'
         )
+        root_tmp = emd.Root(name='root_savedlist')
+        root_tmp.tree(ar6)
+        root_tmp.tree(ar7)
+        root_tmp.tree(
+            emd.Array(
+                name = 'nparray',
+                data=nparray
+            )
+        )
+        root_tmp.metadata = emd.Metadata(
+            name = 'dictionary',
+            data = dic
+        )
+        emd.save(
+            filepath = path,
+            data = root_tmp,
+            mode = 'a'
+        )
 
         # read them
         data1 = emd.read(
@@ -272,12 +301,51 @@ class TestListWrite():
             path,
             emdpath = 'root2'
         )
+        data3 = emd.read(
+            path,
+            emdpath = 'root_savedlist'
+        )
 
 
         # check
-        assert(np.array_equal(data1.data, ar1.data))
-        assert(np.array_equal(data2.tree('another_array').data, ar2.data))
-        assert(np.array_equal(data2.tree('array3').data, ar3.data))
+        assert(np.array_equal(
+            data1.tree('array1').data,
+            ar1.data
+        ))
+        assert(np.array_equal(
+            data1.tree('array2').data,
+            ar2.data
+        ))
+        assert(np.array_equal(
+            data2.tree('array3').data,
+            ar3.data
+        ))
+        assert(np.array_equal(
+            data2.tree('array4').data,
+            ar4.data
+        ))
+        #assert(
+        #    'array5' not in data2.treekeys
+        #)
+        assert(np.array_equal(
+            data3.tree('array6').data,
+            ar6.data
+        ))
+        assert(np.array_equal(
+            data3.tree('array7').data,
+            ar7.data
+        ))
+        assert(np.array_equal(
+            data3.tree('nparray').data,
+            nparray
+        ))
+        assert(
+            'dictionary' in data3.metadata.keys()
+        )
+        d = data3.metadata['dictionary']
+        for k in d.keys:
+            assert(k in dic.keys())
+            assert(d[k] == dic[k])
 
 
 
