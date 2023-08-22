@@ -99,7 +99,7 @@ class TestEMD01:
             to the file.
             """
             
-            data, _ = np.mgrid[0:100, 0:100]
+            data, _, __ = np.mgrid[0:2, 0:100, 0:100]
 
             with h5py.File(_temp_file, 'w') as f0:
                 f0.attrs['version_major'] = 0
