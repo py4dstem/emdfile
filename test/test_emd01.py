@@ -113,7 +113,7 @@ class TestEMD01:
                 group_top.attrs['emd_group_type'] = int(1)
                 group_top.create_dataset('data', data=data)
                 dim1 = group_top.create_dataset('dim1', data=range(3))
-                dim1.attrs['name'] = 'X'
+                dim1.attrs['name'] = 'Z'
                 dim1.attrs['units'] = 'pixels'
                 dim2 = group_top.create_dataset('dim2', data=range(100))
                 dim2.attrs['name'] = 'Y'
