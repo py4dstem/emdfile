@@ -412,8 +412,11 @@ class Array(Node):
         """
         Returns True if a dim is linear, else returns False
         """
-        dim_expanded = self._unpack_dim(dim[:2],length)
-        return np.array_equal(dim,dim_expanded)
+        try:
+            dim_expanded = self._unpack_dim(dim[:2],length)
+            return np.array_equal(dim,dim_expanded)
+        except IndexError:
+            return True
 
 
 
@@ -491,8 +494,10 @@ class Array(Node):
             string += "\n" + space + "The Array dimensions are:"
 
         for n in range(self.rank):
-            if len(self.dims[n]) >= 2:
+            if len(self.dims[n]) >= 3:
                 string += "\n"+space+f"    {self.dim_names[n]} = [{self.dims[n][0]},{self.dims[n][1]},{self.dims[n][2]},...] {self.dim_units[n]}"
+            if len(self.dims[n]) == 2:
+                string += "\n"+space+f"    {self.dim_names[n]} = [{self.dims[n][0]},{self.dims[n][1]}] {self.dim_units[n]}"
             elif len(self.dims[n]) == 1:
                 string += "\n"+space+f"    {self.dim_names[n]} = [{self.dims[n][0]}] {self.dim_units[n]}"
             else:
