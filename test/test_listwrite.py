@@ -53,12 +53,12 @@ class TestListWrite():
 
         # make two arrays
         ar1 = emd.Array(
-            data = np.array([[1,2],[3,4]]),
-            name = 'an_array'
+            data = np.eye(4),
+            name = 'array1'
         )
         ar2 = emd.Array(
             data = np.arange(10),
-            name = 'another_array'
+            name = 'array2'
         )
 
         # add roots
@@ -67,22 +67,10 @@ class TestListWrite():
         root1.tree(ar1)
         root2.tree(ar2)
 
-        # TODO - save in one go
         # save them
-        #emd.save(
-        #    filepath = path,
-        #    data = [ar1,ar2],
-        #)
-
-        # TODO - remove
         emd.save(
             filepath = path,
-            data = ar1
-        )
-        emd.save(
-            filepath = path,
-            data = ar2,
-            mode = 'a'
+            data = [ar1,ar2],
         )
 
         # read them
@@ -105,11 +93,11 @@ class TestListWrite():
         # make several arrays
         ar1 = emd.Array(
             data = np.array([[1,2],[3,4]]),
-            name = 'an_array'
+            name = 'array1'
         )
         ar2 = emd.Array(
             data = np.arange(10),
-            name = 'another_array'
+            name = 'array2'
         )
         ar3 = emd.Array(
             data = np.arange(6),
@@ -123,22 +111,10 @@ class TestListWrite():
         root2.tree(ar2)
         root2.tree(ar3)
 
-        # TODO - save in one go
         # save them
-        #emd.save(
-        #    filepath = path,
-        #    data = [root1,root2],
-        #)
-
-        # TODO - remove
         emd.save(
             filepath = path,
-            data = root1
-        )
-        emd.save(
-            filepath = path,
-            data = root2,
-            mode = 'a'
+            data = [root1,root2],
         )
 
         # read them
@@ -154,7 +130,7 @@ class TestListWrite():
 
         # check
         assert(np.array_equal(data1.data, ar1.data))
-        assert(np.array_equal(data2.tree('another_array').data, ar2.data))
+        assert(np.array_equal(data2.tree('array2').data, ar2.data))
         assert(np.array_equal(data2.tree('array3').data, ar3.data))
 
 
@@ -241,10 +217,14 @@ class TestListWrite():
             data = np.eye(5),
             name = 'array7'
         )
-        nparray = np.ones((2,3,2,3))
-        dic = {
+        nparray1 = np.ones((2,3,2,3))
+        nparray2 = np.ones((2,3,2,3,2,3))
+        dic1 = {
             'x' : 1,
             'y' : True
+        }
+        dic2 = {
+            'z' : -2,
         }
 
         # add roots
@@ -256,41 +236,40 @@ class TestListWrite():
         root2.tree(ar4)
         root2.tree(ar5)
 
-        # TODO - save in one go
         # save them
-        #emd.save(
-        #    filepath = path,
-        #    data = [root1,root2],
-        #)
+        emd.save(
+            filepath = path,
+            data = [root1,ar3,ar4,ar6,ar7,nparray1,nparray2,dic1,dic2],
+        )
 
         # TODO - remove
-        emd.save(
-            filepath = path,
-            data = root1
-        )
-        emd.save(
-            filepath = path,
-            data = root2,
-            mode = 'a'
-        )
-        root_tmp = emd.Root(name='root_savedlist')
-        root_tmp.tree(ar6)
-        root_tmp.tree(ar7)
-        root_tmp.tree(
-            emd.Array(
-                name = 'nparray',
-                data=nparray
-            )
-        )
-        root_tmp.metadata = emd.Metadata(
-            name = 'dictionary',
-            data = dic
-        )
-        emd.save(
-            filepath = path,
-            data = root_tmp,
-            mode = 'a'
-        )
+        #emd.save(
+        #    filepath = path,
+        #    data = root1
+        #)
+        #emd.save(
+        #    filepath = path,
+        #    data = root2,
+        #    mode = 'a'
+        #)
+        #root_tmp = emd.Root(name='root_savedlist')
+        #root_tmp.tree(ar6)
+        #root_tmp.tree(ar7)
+        #root_tmp.tree(
+        #    emd.Array(
+        #        name = 'nparray',
+        #        data=nparray
+        #    )
+        #)
+        #root_tmp.metadata = emd.Metadata(
+        #    name = 'dictionary',
+        #    data = dic
+        #)
+        #emd.save(
+        #    filepath = path,
+        #    data = root_tmp,
+        #    mode = 'a'
+        #)
 
         # read them
         data1 = emd.read(
@@ -324,9 +303,9 @@ class TestListWrite():
             data2.tree('array4').data,
             ar4.data
         ))
-        #assert(
-        #    'array5' not in data2.treekeys
-        #)
+        assert(
+            'array5' not in data2.treekeys
+        )
         assert(np.array_equal(
             data3.tree('array6').data,
             ar6.data
@@ -336,16 +315,27 @@ class TestListWrite():
             ar7.data
         ))
         assert(np.array_equal(
-            data3.tree('nparray').data,
-            nparray
+            data3.tree('array_0').data,
+            nparray1
+        ))
+        assert(np.array_equal(
+            data3.tree('array_1').data,
+            nparray2
         ))
         assert(
-            'dictionary' in data3.metadata.keys()
+            'dictionary_0' in data3.metadata.keys()
         )
-        d = data3.metadata['dictionary']
+        assert(
+            'dictionary_1' in data3.metadata.keys()
+        )
+        d = data3.metadata['dictionary_0']
         for k in d.keys:
-            assert(k in dic.keys())
-            assert(d[k] == dic[k])
+            assert(k in dic1.keys())
+            assert(d[k] == dic1[k])
+        d = data3.metadata['dictionary_1']
+        for k in d.keys:
+            assert(k in dic2.keys())
+            assert(d[k] == dic2[k])
 
 
 

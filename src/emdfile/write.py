@@ -173,58 +173,124 @@ def write(
         root.metadata = data
         data = root
 
-    # for lists...
+
+
+    ### Saving lists of items ###
+
     elif isinstance(data, (list,tuple)):
         assert(all( [isinstance(x,(np.ndarray,dict,Node)) for x in data] )), \
             "can only save np.array, dictionary, or emd.Node objects"
 
-        # ...save lists of Roots as multiple EMD trees
-        if any([isinstance(x,Root) for x in data]):
-            assert(all([isinstance(x,Root) for x in data])), \
-            "if saving a list containing a Root, all list elements must be Roots"
-            # save the first root with a call to save, then
-            # change to append mode and save other roots
+        # prepare roots
+
+        # sort items into roots, nodes, and (np.array/dict)s
+        list_roots = []
+        list_nodes = []
+        list_others = []
+        for x in range(len(data)):
+            x = data.pop(0)
+            if isinstance(x,Root):
+                list_roots.append(x)
+            elif isinstance(x,Node):
+                list_nodes.append(x)
+            else:
+                list_others.append(x)
+
+        # sort nodes+array/dicts into rooted and unrooted
+        list_rooted_nodes = []
+        list_unrooted_items = []
+        for x in list_nodes:
+            if x.root is None:
+                list_unrooted_items.append(x)
+            else:
+                list_rooted_nodes.append(x)
+        list_unrooted_items += list_others
+
+        # place all unrooted items into a single root
+        if len(list_unrooted_items) > 0:
+            root_savedlist = Root(name = "root_savedlist")
+            ind_ars = 0
+            ind_dics = 0
+            for x in list_unrooted_items:
+                if isinstance(x,Node):
+                    root_savedlist.tree(x)
+                elif isinstance(x,np.ndarray):
+                    ar = Array(
+                        name = f"array_{ind_ars}",
+                        data = x
+                    )
+                    root_savedlist.tree(ar)
+                    ind_ars += 1
+                else:
+                    dic = Metadata(
+                        name = f"dictionary_{ind_dics}",
+                        data = x
+                    )
+                    root_savedlist.metadata = dic
+                    ind_dics += 1
+            list_roots.insert(0,root_savedlist)
+
+
+        # sort through rooted nodes, grouping them by roots
+        # ensure only selected items from each root are saved
+        # trees holding several selected nodes will be flattened
+        dict_roots = {}
+        if len(list_rooted_nodes) > 0:
+            # list all roots, check for duplicate names
+            for x in list_rooted_nodes:
+                rcurr,rname = x.root,x.root.name
+                if rname not in dict_roots.keys():
+                    dict_roots[rname] = rcurr
+                else:
+                    assert(rcurr is dict_roots[rname]), f"Two nodes have different roots with identical names! Try changing one of their names."
+            # make new roots, replace in the dict
+            for rname,rcurr in dict_roots.items():
+                root_new = Root( name=rname )
+                for m in rcurr.metadata.values():
+                    root_new.metadata = m
+                dict_roots[rname] = root_new
+
+        # save
+
+        # set mode to append
+        if mode in writemode:
+            mode = 'a'
+        elif mode in overwritemode:
+            if exists(filepath):
+                remove(filepath)
+            mode = 'a'
+        else:
+            pass
+
+        # write roots
+        for root in list_roots:
             write(
                 filepath,
-                data[0],
-                mode=mode,
-                tree=tree
+                root,
+                tree = True,
+                mode = mode
             )
-            if mode in writemode:
-                mode = 'a'
-            elif mode in overwritemode:
+
+        # write nodes
+        for root in dict_roots.values():
+            write(
+                filepath,
+                root,
+                mode = mode
+            )
+        for item in list_rooted_nodes:
+            write(
+                filepath,
+                item,
+                emdpath = item.root.name,
+                tree = False,
                 mode = 'ao'
-            for x in data[1:]:
-                write(
-                    filepath,
-                    x,
-                    mode=mode,
-                    tree=tree
-                )
-            return
+            )
+        return
 
-        # ...otherwise store all list elements in a single tree...
-        root = Root(name='root')
-        ar_ind,md_ind = 0,0
-        for d in data:
 
-            # ...with numpy arrays as Arrays
-            if isinstance(d,np.ndarray):
-                d = Array(name=f'np.array_{ar_ind}',data=d)
-                ar_ind += 1
-                root.add_to_tree(d)
 
-            # ...dictionaries as Metadata
-            elif isinstance(d,dict):
-                d = Metadata(name=f'dictionary_{md_ind}',data=d)
-                md_ind += 1
-                root.metadata = d
-
-            # ...and Nodes as themselves
-            else:
-                assert(isinstance(d,Node)), f"invalid data type in `data` list, {type(d)}"
-                root.add_to_tree(d)
-        data = root
+    ### Saving emd Node data ###
 
     # `data` should now be a Node!
     assert(isinstance(data,Node)), f"invalid type {type(data)} found for `data`"
