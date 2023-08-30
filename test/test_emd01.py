@@ -128,20 +128,41 @@ class TestEMD01:
             """Ensure it is not seen as a emd v1.0"""
             assert not _is_EMD_file(_make_data)
 
-        def test_read(self, _make_data):
+        def test_read_emd01method(self, _make_data):
             """Read file with 1 data set"""
             new_emd = read_EMD_v0p1(_make_data)
-            print(new_emd)
+            assert isinstance(new_emd,Array)
+            pass
+
+        def test_read2_emd01method(self, _make_data_2):
+            """Read file with 2 data sets"""
+            new_emd = read_EMD_v0p1(_make_data_2)
+            assert isinstance(new_emd,Root)
+            pass
+
+        def test_read3D_emd01method(self, _make_data_3D):
+            """Read file with 3D data data sets"""
+            new_emd = read_EMD_v0p1(_make_data_3D)
+            assert isinstance(new_emd,Array)
+            pass
+
+        def test_read(self, _make_data):
+            """Read file with 1 data set"""
+            new_emd = read(_make_data)
+            assert isinstance(new_emd,Array)
+            pass
 
         def test_read2(self, _make_data_2):
             """Read file with 2 data sets"""
-            new_emd = read_EMD_v0p1(_make_data_2)
-            print(new_emd)
+            new_emd = read(_make_data_2)
+            assert isinstance(new_emd,Root)
+            pass
 
         def test_read3D(self, _make_data_3D):
             """Read file with 3D data data sets"""
-            new_emd = read_EMD_v0p1(_make_data_3D)
-            print(new_emd)
+            new_emd = read(_make_data_3D)
+            assert isinstance(new_emd,Array)
+            pass
 
 #         def test_actual_data(self):
 #             import ncempy
