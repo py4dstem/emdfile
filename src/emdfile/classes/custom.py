@@ -80,6 +80,7 @@ class Custom(Node):
                     attr_grp.attrs['emd_group_type'] = 'custom_' + \
                         attr_grp.attrs['emd_group_type']
 
+        return grp
 
 
 
