@@ -26,31 +26,26 @@ class emd_v0p1:
         except:
             print('Error opening file for readonly: "{}"'.format(filename))
             raise
-        
+
         self.file_hdl.visititems(self._is_emd_group)
-        
+
     def __del__(self):
         self.file_hdl.close()
-    
+
     def __enter__(self):
         return self
-    
+
     def __exit__(self, exception_type, exception_value, traceback):
         self.__del__()
         return None
-    
+
     def _is_emd_group(self, name, obj):
         """Checks if a HDF5 item (group or dataset) is a emd v0.1 group. This is used in h5py.visititems."""
         if isinstance(obj, h5py.Group):
             if 'emd_group_type' in obj.attrs and obj.attrs['emd_group_type'] == 1:
                 self.emds.append(obj)
-    
-    def _is_EMD_v0p1(self):
-        if self.file_hdl.attrs['version_major'] == 0 and self.file_hdl.attrs['version_minor'] == 1:
-            return True
-        else:
-            return False
-        
+
+
 def read_EMD_v0p1(
     filepath,
     verbose = True
@@ -64,10 +59,10 @@ def read_EMD_v0p1(
     Returns:
         (emdfile.Array) the data
     """
-    
+
     if isinstance(filepath, str):
         filepath = Path(filepath)
-    
+
     root = Root(name=filepath.name)  # name is optional
     emd0 = None
 
@@ -77,14 +72,14 @@ def read_EMD_v0p1(
         # if no EMD 0.1 group is found, or if it is unreadable, raise an exception
         if len(emd0.emds) < 1:
             raise Exception("No EMD 0.1 groups found!")
-        
+
         if verbose:
             print('available emds', emd0.emds)
-        
+
         # read in the groups
         for emd_group in emd0.emds:
             data = emd_group['data'][:]
-            
+
             dims = []
             dim_units = []
             dim_names = []
@@ -93,7 +88,7 @@ def read_EMD_v0p1(
                 dims.append(cur_dim[:])
                 dim_units.append(cur_dim.attrs['units'])
                 dim_names.append(cur_dim.attrs['name'])
-            
+
             # Put the data into an emdfile.Array
             arr = Array(
                 data = data[:],
@@ -103,7 +98,7 @@ def read_EMD_v0p1(
                 dim_units = dim_units,
                 dim_names = dim_names,
             )
-            
+
             # Add the Array to the Root
             root.tree(arr)
     if len(emd0.emds) == 1:
