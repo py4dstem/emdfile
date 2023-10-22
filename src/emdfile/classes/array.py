@@ -496,7 +496,7 @@ class Array(Node):
         for n in range(self.rank):
             if len(self.dims[n]) >= 3:
                 string += "\n"+space+f"    {self.dim_names[n]} = [{self.dims[n][0]},{self.dims[n][1]},{self.dims[n][2]},...] {self.dim_units[n]}"
-            if len(self.dims[n]) == 2:
+            elif len(self.dims[n]) == 2:
                 string += "\n"+space+f"    {self.dim_names[n]} = [{self.dims[n][0]},{self.dims[n][1]}] {self.dim_units[n]}"
             elif len(self.dims[n]) == 1:
                 string += "\n"+space+f"    {self.dim_names[n]} = [{self.dims[n][0]}] {self.dim_units[n]}"
