@@ -19,6 +19,9 @@ from emdfile.classes.utils import (
     EMD_data_group_types
 )
 
+# EMD 0.1 support
+from emdfile.read_EMD_v0p1 import read_EMD_v0p1
+
 
 
 
@@ -137,13 +140,24 @@ def read(
             the EMD tree loaded from, and (2) a tree of one or more pieces
             of data/metadata
     """
-    # parse filepath, verify EMD file
-    er1 = f"filepath must be a string or Path, not {type(filepath)}"
-    er2 = f"specified filepath '{filepath}' was not found on the filesystem"
-    er3 = f"{filepath} isn't a valid EMD 1.0 file."
-    assert(isinstance(filepath, (str,pathlib.Path) )), er1
-    assert(exists(filepath)), er2
-    assert(_is_EMD_file(filepath)), er3
+    # validate filepath
+    assert(isinstance(filepath, (str,pathlib.Path) )), f"filepath must be a string or Path, not {type(filepath)}"
+    assert(exists(filepath)), f"specified filepath '{filepath}' was not found on the filesystem"
+    try:
+        with h5py.File(filepath,'r') as f:
+            pass
+    except OSError:
+        raise Exception(f"The file at {filepath} is not an HDF5 file!")
+
+    # determine if the file is EMD 1.0
+    # if not, try reading it as an EMD 0.1
+    if not _is_EMD_file(filepath):
+        try:
+            print(f"This file is not an EMD v1.0 file - attempting to read as an EMD v0.1...")
+            ans = read_EMD_v0p1(filepath)
+            return ans
+        except:
+            raise Exception(f"The file at '{filepath}' is not recognized as an EMD file!")
 
 
     # get/check version

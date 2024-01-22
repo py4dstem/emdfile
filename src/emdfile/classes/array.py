@@ -499,9 +499,15 @@ class Array(Node):
             elif len(self.dims[n]) == 2:
                 string += "\n"+space+f"    {self.dim_names[n]} = [{self.dims[n][0]},{self.dims[n][1]}] {self.dim_units[n]}"
             elif len(self.dims[n]) == 1:
-                string += "\n"+space+f"    {self.dim_names[n]} = [{self.dims[n][0]}] {self.dim_units[n]}"
+                try:
+                    string += "\n"+space+f"    {self.dim_names[n]} = [{self.dims[n][0]}] {self.dim_units[n]}"
+                except(IndexError):
+                    string += "\n"+space+f"    {self.dim_names[n]} = [{self.dims[n][:]}] {self.dim_units[n]}"
             else:
-                string += "\n"+space+f"    {self.dim_names[n]} = [] {self.dim_units[n]}"
+                try:
+                    string += "\n"+space+f"    {self.dim_names[n]} = [] {self.dim_units[n]}"
+                except(IndexError):
+                    string += "\n"+space+f"    {self.dim_names[n]} = [{self.dims[n][:]}] {self.dim_units[n]}"
             if not self._dim_is_linear(self.dims[n],self.shape[n]):
                 string += "  (*non-linear*)"
         string += "\n)"
