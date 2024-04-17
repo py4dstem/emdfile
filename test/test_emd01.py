@@ -120,7 +120,6 @@ class TestEMD01:
         def test_make_data(self, _make_data):
             """Test that the temporary data is created with the emd v0.1 format."""
             assert _make_data.exists()
-
             with h5py.File(_make_data,'r') as f0:
                 assert isinstance(f0['/data/test_data'], h5py.Group)
 

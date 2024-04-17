@@ -1,10 +1,8 @@
 # Read EMD v0.1 files
 
-from pathlib import Path
-
 import h5py
-from emdfile.classes import Array
-from emdfile import Root
+from pathlib import Path
+from emdfile import Root, Array
 
 class emd_v0p1:
     """A class used to find data and metadata in emd v0.1 files."""
