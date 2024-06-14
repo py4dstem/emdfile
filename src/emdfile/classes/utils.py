@@ -58,7 +58,8 @@ def _get_dependent_packages():
     Searches packages with the top level attribute "_emd_hook" = True.
     Returns a generator of all such packages
     """
-    for module in sys.modules.values():
+    mods = sys.modules.values()
+    for module in mods:
         if isinstance(module, types.ModuleType):
             if hasattr(module, "_emd_hook"):
                 if module._emd_hook is True:
