@@ -225,7 +225,7 @@ class PointList(Node):
                 f,
                 data = self.data[f]
             )
-            group_current_field.attrs.create("dtype", np.string_(t))
+            group_current_field.attrs.create("dtype", np.bytes_(t))
 
         # Return
         return grp
