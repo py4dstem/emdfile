@@ -19,6 +19,13 @@ def set_author(author):
     """
     global _USER_NAME
     _USER_NAME = author
+def set_program(program):
+    """
+    Accepts a string, which will be written to the "authoring_program" field in any
+    EMD file headers written during this Python session
+    """
+    global _PROGRAM_NAME
+    _PROGRAM_NAME = program
 
 # read/write
 from emdfile.read import (
