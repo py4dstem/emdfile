@@ -5,15 +5,11 @@ import numpy as np
 from warnings import warn
 from os.path import exists,basename
 from os import remove
-from uuid import uuid4
-from emdfile.read import _is_EMD_file, _get_EMD_rootgroups
+from emdfile.classes import Node, Root, Array, Metadata
 from emdfile.classes.utils import EMD_data_group_types
-from emdfile.classes import (
-    Node,
-    Root,
-    Array,
-    Metadata
-)
+from emdfile.utils import (_is_EMD_file, _get_EMD_rootgroups, _write_header,
+    _write_from_root, _write_single_node, _write_tree, _append_root_metadata,
+    _validate_treepath, _overwrite_single_node, _append_branch)
 
 
 def write(
@@ -24,7 +20,7 @@ def write(
     tree = True,
     ):
     """
-    Saves data to a .h5 file at filepath.
+    Saves data to an .h5 file at filepath.
 
     Calling
 
@@ -113,32 +109,15 @@ def write(
             pointing to an existing EMD file tree node.
     """
     # parse mode
-    writemode = [
-        'w',
-        'write'
-    ]
-    overwritemode = [
-        'o',
-        'overwrite'
-    ]
-    appendmode = [
-        'a',
-        '+',
-        'append'
-    ]
-    appendovermode = [
-        'oa',
-        'ao',
-        'o+',
-        '+o',
-        'appendover'
-    ]
+    writemode = ['w', 'write']
+    overwritemode = ['o', 'overwrite']
+    appendmode = ['a', '+', 'append']
+    appendovermode = [ 'oa', 'ao', 'o+', '+o', 'appendover']
     allmodes = writemode + overwritemode + appendmode + appendovermode
 
     # emdpath implies append mode
     if emdpath is not None and mode not in appendovermode:
         mode = 'a'
-
 
     # validate `mode` and `tree` inputs
     er = f"unrecognized mode {mode}; mode must be in {allmodes}"
@@ -693,238 +672,4 @@ def write(
 
     # end
     pass
-
-
-
-
-
-
-# Utilities
-
-def _write_header(
-    file
-    ):
-    from emdfile import _PROGRAM_NAME, _USER_NAME
-    file.attrs.create("emd_group_type",'file')
-    file.attrs.create("version_major",1)
-    file.attrs.create("version_minor",0)
-    #file.attrs.create("version_release",0)
-    file.attrs.create("UUID",str(uuid4()))
-    file.attrs.create("authoring_program",_PROGRAM_NAME)
-    file.attrs.create("authoring_user",_USER_NAME)
-
-
-def _write_from_root(
-    file,
-    root,
-    data,
-    tree
-    ):
-    """ From an open h5py File with an EMD 1.0 header, adds a new root
-    and data tree
-    """
-    # write the root
-    rootgroup = _write_single_node(
-        group = file,
-        data = root,
-    )
-    rootgroup.attrs['emd_group_type'] = 'root'
-
-    # write the rest
-    if data is root:
-        if tree is False:
-            pass
-        else:
-            _write_tree(
-                group=rootgroup,
-                data=data
-            )
-    else:
-        if tree is False:
-            grp = _write_single_node(
-                group = rootgroup,
-                data = data
-            )
-        elif tree is True:
-            grp = _write_single_node(
-                group = rootgroup,
-                data = data
-            )
-            _write_tree(
-                group = grp,
-                data = data
-            )
-        else:
-            _write_tree(
-                group = rootgroup,
-                data = data
-            )
-
-
-def _write_single_node(
-    group,
-    data
-    ):
-    grp = data.to_h5(group)
-    return grp
-
-
-def _write_tree(
-    group,
-    data
-    ):
-    """ Writes the data tree underneath `data`; does not write `data`
-    """
-    for k in data._branch.keys():
-        grp = _write_single_node(
-            group = group,
-            data = data._branch[k]
-        )
-        _write_tree(
-            grp,
-            data._branch[k]
-        )
-
-
-def _append_root_metadata(
-    rootgroup,
-    root,
-    appendover
-    ):
-    # Determine if there is new group metadata
-    if len(root._metadata)==0:
-        return
-    # Get file root metadata groups
-    metadata_groups = []
-    if "metadatabundle" not in rootgroup.keys():
-        mdbundle_group = rootgroup.create_group('metadatabundle')
-    else:
-        mdbundle_group = rootgroup['metadatabundle']
-        for k in mdbundle_group.keys():
-            if "emd_group_type" in mdbundle_group[k].attrs.keys():
-                if mdbundle_group[k].attrs["emd_group_type"] == "metadata":
-                    metadata_groups.append(k)
-    # loop
-    for key in root._metadata:
-        # if this group already exists
-        if key in metadata_groups:
-            # overwrite it
-            if appendover:
-                del(mdbundle_group[key])
-                root._metadata[key].to_h5(mdbundle_group)
-            # or skip it
-            else:
-                pass
-        # otherwise, write it
-        else:
-            root._metadata[key].to_h5(mdbundle_group)
-    return
-
-
-def _validate_treepath(
-    rootgroup,
-    treepath
-    ):
-    """
-    Accepts a file rootgroup and a runtime `treepath` string.
-    If the treepath is not in the file, returns False.
-    If the treepath is in the file, returns (grp, True) and
-    if the treepath is one node beyond the file, returns (grp, False),
-    where `grp` is the final h5py Group on treepath in the file tree.
-    """
-    grp_names = treepath.split('/')
-    try:
-        grp_names.remove('')
-    except ValueError:
-        pass
-    group = rootgroup
-    for i,name in enumerate(grp_names):
-        if name not in group.keys():
-            # catch for being one node beyond
-            if i == len(grp_names)-1:
-                return group, False
-            return False
-        group = group[name]
-        try:
-            assert(isinstance(group,h5py.Group))
-        except AssertionError:
-            return False
-    return group, True
-
-
-def _overwrite_single_node(
-    group,
-    data
-    ):
-    # get names
-    groupname = group.name.split('/')
-    name = groupname[-1]
-    rootname = '/'+groupname[1]
-    groupname = '/'+'/'.join(groupname[2:])
-
-    # Validate
-    assert(data.name == name), f"Can't overwrite - data/group names don't match: {data.name} != {name}"
-    assert(groupname == data._treepath), f"Can't overwrite - data/group paths dont match: {group.name != data._treepath}"
-
-    # Get parent group
-    parentpath = data._treepath.split('/')
-    parentpath = rootname+'/'.join(parentpath[:-1])
-    parentgroup = group.file[parentpath]
-
-    # Rename the old group
-    parentgroup.move(name,"_tmp_"+name)
-
-    # Write the new data 
-    new_group = _write_single_node(
-        parentgroup,
-        data
-    )
-
-    # Copy the links
-    keys = [k for k in group.keys() if "emd_group_type" in group[k].attrs.keys()]
-    keys = [k for k in keys if group[k].attrs["emd_group_type"] in EMD_data_group_types]
-    for key in keys:
-        new_group[key] = group[key]
-
-    # Remove the old group
-    del(parentgroup["_tmp_"+name],group)
-
-    # Return
-    return new_group
-
-
-def _append_branch(
-    group,
-    data,
-    appendover
-    ):
-    groupkeys = [k for k in group.keys() if "emd_group_type" in group[k].attrs.keys()]
-    # for each node under `data`...
-    for key in data._branch.keys():
-        d = data._branch[key]
-        # ...if this node doesn't exist in the H5, do a simple write
-        if d.name not in groupkeys:
-            _write_single_node(
-                group,
-                d
-            )
-            _write_tree(
-                group,
-                d
-            )
-        # otherwise, overwrite or skip it, then call this fn again
-        else:
-            if appendover:
-                next_node = _overwrite_single_node(
-                    group[key],
-                    d
-                )
-            else:
-                next_node = group[key]
-            _append_branch(
-                next_node,
-                d,
-                appendover
-            )
-
 
