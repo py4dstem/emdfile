@@ -28,16 +28,16 @@ def set_program(program):
     _PROGRAM_NAME = program
 
 # read/write
-from emdfile.read import (
-    read,
-    print_h5_tree,
+from emdfile.read import read,print_h5_tree
+from emdfile.read import print_h5_tree as printtree
+from emdfile.write import write as save
+from emdfile.utils import
     _is_EMD_file,
     _get_EMD_version,
     _version_is_geq,
+    _get_UUID,
     _read_metadata
 )
-from emdfile.write import write as save
-from emdfile.read import print_h5_tree as printtree
 
 # version
 from emdfile.version import __version__
@@ -48,5 +48,4 @@ from emdfile.tqdmnd import tqdmnd
 # test paths
 from os.path import dirname,join
 _TESTPATH = join(join(dirname(__file__), "../.."), "test/unit_test_data")
-
 

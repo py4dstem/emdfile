@@ -16,97 +16,42 @@ def write(
     filepath,
     data,
     mode = 'w',
-    emdpath = None,
     tree = True,
+    emdpath = None,
     ):
     """
     Saves data to an .h5 file at filepath.
 
-    Calling
-
-        >>> save(path, data)
-
-    if `data` is a Root instance saves this root and its entire tree to a new
-    file. If `data` is any other type of rooted node (i.e. a node inside of
-    some runtime data tree), this code writes a new file with a single tree
-    using this node's root (even if this node is far downstream of the root
-    node), placing this node and the tree branch underneath it inside that
-    root. In both cases, the root metadata is stored in the new H5 root node.
-    If `data` is an unrooted node (i.e. a freestanding node not connected to
-    a tree), this code creates a new root node with no metadata and this node's
-    name, and places this node inside that root in a new file.
-
-    If `data` is a numpy array or Python dictionary, wraps data in either an
-    emd.Array or emd.Metadata instance, assigns the name 'np.array' or
-    'dictionary', places the object in a root of this name and saves. If
-    `data` is a list of objects which are all numpy arrays, Python dictionaries,
-    or emd.Node instances, places all these objects into a single root, assigns
-    the roots name according to the first object in the list, and saves.
-
-    To write a single node from a tree,  set `tree` to False. To write the
-    tree underneath a node but exclude the node itself set `tree` to None.
-
-    To add to an existing EMD file, use the `mode` argument to set append or
-    appendover mode. If the `emdpath` variable is not set and `data` has a
-    runtime root that does not exist in the EMD root groups already present,
-    adds the new root and writes as described above. If `emdpath` is not set
-    and the runtime root group matches a root group that's already present,
-    this function performs a diff operation between the root metadata and
-    data nodes from `data` and those already in the H5 file. Append mode adds
-    any data/metadata groups with no equivalent (i.e. same name and tree
-    location) in the H5 tree, while skipping any data/metadata already found
-    in the tree. Appendover adds any data/metadata with no equivalent already
-    in the H5 tree, and overwrites any data/metadata groups that are already
-    represented in the HDF5 with the new data. Note that this function does
-    not attempt to take a diff between the contents of the groups and the
-    runtime data groups - it only considers the names and their locations in
-    the tree. If append or appendover mode are used and filepath is set to
-    a location that does not already contain a file on the filesystem,
-    behavior is identical to write mode. When appendover mode overwrites
-    data, it is erasing the old links and creating new links to new data;
-    however, the HDF5 file does not release the space on the filesystem.
-    To free up storage, set mode to 'appendover', and this function will
-    add a final step to re-write then delete the old file.
-
-    The `emdpath` argument is used to append to a specific location in an
-    extant EMD file downstream of some extant root. If passed, it must point
-    to a valid location in the EMD file. This function will then perform a
-    diff and write as described in the prior paragraph, except beginning
-    from the H5 node specified in `emdpath`. Note that in this case the root
-    metadata is still compared to and added or overwritten in the H5 root node,
-    even if the remaining data is being added to some downstream branch.
-
-
-    Args:
-        filepath: path where the file will be saved
-        data: an EMD data class instance
-        mode (str): supported modes and their keys are:
-                - write ('w','write')
-                - overwrite ('o','overwrite')
-                - append ('a','+','append')
-                - appendover ('ao','oa','o+','+o','appendover')
-            Write mode writes a new file, and raises an exception if a file
-            of this name already exists.  Overwrite mode deletes any file of
-            this name that already exists and writes a new file. Append and
-            appendover mode write a new file if no file of this name exists,
-            or if a file of this name does exist, adds new data to the file.
-            The specific behavior of append and appendover depend on the
-            `data`,`emdpath`, and `tree` arguments as discussed in more detail
-            above. Broadly, both modes attempt to detemine the difference
-            between the data passed and that present in the extent HDF5 file
-            tree, add any data not already in the H5, and then either skips
-            or overwrites conflicting nodes in append or appendover mode,
-            respectively.
-        tree: indicates how the object tree nested inside `data` should
-            be treated.  If `True` (default), the entire tree is saved.
-            If `False`, only this object is saved, without its tree. If
-            `None`, saves the entire tree underneath `data`, but not
-            the node at `data` itself.
-        emdpath (str or None): optional parameter used in conjunction with
-            append or appendover mode; if passed in write or overwrite mode,
-            this argument is ignored. Indicates where in an existing EMD
-            file tree to place the data. Must be a '/' delimited string
-            pointing to an existing EMD file tree node.
+    Parameters
+    ----------
+    filepath : str
+        Save path
+    data : emdfile.Node instance
+        The data
+    mode : str
+        Valid modes are write ('w','write'), overwrite ('o','overwrite'), append
+        ('a','+','append'), and append-over ('ao','oa','o+','+o','appendover').
+        Write mode writes a new file, and raises an exception if a file
+        of this name already exists.  Overwrite mode deletes any file of
+        this name that already exists and writes a new file. Append and
+        appendover mode write a new file if no file of this name exists,
+        or if a file of this name does exist, adds new data to the file.
+        How new data is added to an existing file depends on the `data`,
+        `emdpath`, and `tree` arguments. Both 'a' and 'ao' modes attempt to
+        detemine the difference between the data passed and that present in the
+        existing HDF5 file, adding any data not already in the H5 and either
+        skipping ('a') or overwriting ('ao') existing data.
+    tree : True or False or None
+        assuming `data` is a node containing a downstream tree of nodes,
+        `tree` determines how the downstream tree should be treated.  If True
+        (default), the entire tree is saved. If False, only the node itself is
+        saved. If None, the downstream tree is saved, but the `data` node itself
+        is excluded.
+    emdpath : str or None
+        In append or append-over mode, indicates where in the existing HDF5
+        file to graft the data.  Must be a '/' delimited string pointing to an
+        existing node. Passing the `emdpath` argument automatically changes the
+        mode to append if it was set to write or overwrite.
     """
     # parse mode
     writemode = ['w', 'write']
@@ -129,38 +74,27 @@ def write(
     if mode in writemode:
         assert(not(exists(filepath))), "A file already exists at this destination; use append or overwrite mode, or choose a new file path."
 
-
-    # validate `data` inputs, and
-    # handle non-Node `data` inputs
-
+    # validate `data` inputs, and handle non-Node `data` inputs
     # numpy array -> Array
     if isinstance(data, np.ndarray):
         root = Root(name='root')
         data = Array(name='np.array',data=data)
         root.add_to_tree(data)
-
     # dictionaries -> Metadata
     elif isinstance(data, dict):
         root = Root(name='root')
         md = Metadata(name='dictionary',data=data)
         root.metadata = md
         data = root
-
     # Metadata
     elif isinstance(data, Metadata):
         root = Root(name='root')
         root.metadata = data
         data = root
-
-
-
-    ### Saving lists of items ###
-
+    # Lists and tuples
     elif isinstance(data, (list,tuple)):
         assert(all( [isinstance(x,(np.ndarray,dict,Node)) for x in data] )), \
             "can only save np.array, dictionary, or emd.Node objects"
-
-        # prepare roots
 
         # sort items into roots, nodes, and (np.array/dict)s
         list_roots = []
@@ -209,8 +143,7 @@ def write(
                     ind_dics += 1
             list_roots.insert(0,root_savedlist)
 
-
-        # sort through rooted nodes, grouping them by roots
+        # sort rooted nodes, group nodes with the same roots
         # ensure only selected items from each root are saved
         # trees holding several selected nodes will be flattened
         dict_roots = {}
@@ -228,8 +161,6 @@ def write(
                 for m in rcurr.metadata.values():
                     root_new.metadata = m
                 dict_roots[rname] = root_new
-
-        # save
 
         # set mode to append
         if mode in writemode:
@@ -268,23 +199,17 @@ def write(
         return
 
 
-
-    ### Saving emd Node data ###
-
     # `data` should now be a Node!
     assert(isinstance(data,Node)), f"invalid type {type(data)} found for `data`"
 
-    # handle rootless data
-    added_a_root = False
-    if data._root is None:
+    # get the root
+    root = data._root
+    if root is None:
         added_a_root = True
         root = Root(name=data.name+"_root")
         root.add_to_tree(data)
     else:
-        # get the root
-        root = data.root
-
-
+        added_a_root = False
 
     # overwrite mode - delete existing file
     if mode in overwritemode:
@@ -292,21 +217,15 @@ def write(
             remove(filepath)
         mode = 'w'
 
-
-
     # write a new file
     if mode in writemode or (
         mode in appendmode+appendovermode and not exists(filepath)):
-
-
         # open the file
         with h5py.File(filepath, 'w') as f:
-
             # write header
             _write_header(
                 file = f
             )
-
             # write the file
             _write_from_root(
                 file = f,
@@ -315,49 +234,35 @@ def write(
                 tree = tree
             )
 
-
-
     # append to an existing file
     else:
-
         # validate that its an EMD file
         # get the rootgroups
         assert(_is_EMD_file(filepath)), "{filepath} does not point to an EMD 1.0 file"
         emd_rootgroups = _get_EMD_rootgroups(filepath)
-
         # open the file
         with h5py.File(filepath, 'a') as f:
-
-
-
             # if the root doesn't already exist and emdpath is None,
             # do a simple write as above
             if not(root.name in emd_rootgroups) and (emdpath is None):
-
                 _write_from_root(
                     file = f,
                     root = root,
                     data = data,
                     tree = tree
                 )
-
-
-
             # if the root doesn't already exist and emdpath is specified,
             # append the data to the target node
             elif not(root.name in emd_rootgroups):
-
                 # parse emdpath
                 if emdpath[0] == '/':
                     emdpath = emdpath[1:]
                 l = emdpath.split('/')
                 rootname = l[0]
                 treepath = '/'.join(l[1:])
-
                 # get the rootgroup
                 assert(rootname in f.keys()), f"No root called {rootname} found - check your `emdpath`"
                 rootgroup = f[rootname]
-
                 # validate the emdpath
                 # set target_grp to targeted EMD node
                 where = _validate_treepath(
@@ -371,27 +276,22 @@ def write(
                 else:
                     target_grp = where[0]
 
-
                 # append to the tree...
-
                 # ...if data is Root and tree is False
                 if isinstance(data,Root) and (tree is False):
                     raise Exception("Incompatible inputs: if appending from a Root to an existing tree, `tree` can't be False.  Try changing `data` or `tree`.")
-
                 # ...if data is Root and tree is True or None
                 elif isinstance(data,Root):
                     _write_tree(
                         target_grp,
                         data
                     )
-
                 # ...if data is a Node and tree is False
                 elif tree is False:
                     _write_single_node(
                         target_grp,
                         data
                     )
-
                 # ...if data is a Node and tree is True
                 elif tree is True:
                     target_grp = _write_single_node(
@@ -402,7 +302,6 @@ def write(
                         target_grp,
                         data
                     )
-
                 # ...if data is a Node and tree is None
                 else:
                     _write_tree(
@@ -410,26 +309,19 @@ def write(
                         data
                     )
 
-
-
             # if the root does exist and emdpath is None,
             # peform diffmerge A
             elif emdpath is None:
-
                 # choose how to handle conflicts
                 appendover = True if mode in appendovermode else False
-
                 # get the rootgroup
                 rootgroup = f[root.name]
-
                 # compare/append root metadata
                 _append_root_metadata(
                     rootgroup = rootgroup,
                     root = root,
                     appendover = appendover
                 )
-
-
                 # choose behavior and write...
                 if data is root:
                     # ...if the data is the root
@@ -441,7 +333,6 @@ def write(
                         )
                     else:
                         pass
-
                 else:
                     where = _validate_treepath(
                         rootgroup,
@@ -504,25 +395,19 @@ def write(
                                     data
                                 )
 
-
-
             # if the root does exist and emdpath is specified,
             # peform diffmerge B
             else:
-
                 # choose how to handle conflicts
                 appendover = True if mode in appendovermode else False
-
                 # parse emdpath
                 if emdpath[0] == '/':
                     emdpath = emdpath[1:]
                 l = emdpath.split('/')
                 rootname = l[0]
                 treepath = '/'.join(l[1:])
-
                 # get the rootgroup
                 rootgroup = f[root.name]
-
                 # validate the emdpath
                 # set target_grp to targeted EMD node
                 where = _validate_treepath(
@@ -535,8 +420,6 @@ def write(
                     raise Exception(f"No node found at {emdpath} in the EMD tree called {rootname} - check your `emdpath`")
                 else:
                     target_grp = where[0]
-
-
                 # compare/append root metadata
                 _append_root_metadata(
                     rootgroup = rootgroup,
@@ -544,16 +427,11 @@ def write(
                     appendover = appendover
                 )
 
-
-
                 # choose behavior and write...
-
                 # ...if the data is the root
                 if data is root:
-
                     # Confirm that the target node is downstream of the root...
                     assert(rootgroup.__contains__(target_grp.name)), "Specified target node not found in the EMD file - check your emdpath."
-
                     # get the path from source to target, then
                     # move `data` to the target node point
                     path_to_target = target_grp.name.replace(rootgroup.name,'')[1:]
@@ -573,8 +451,6 @@ def write(
                             data,
                             appendover
                         )
-
-
                 # ...if the data is a node...
                 else:
                     # validate the source node path
@@ -657,18 +533,13 @@ def write(
                                         data,
                                         appendover
                                     )
-
                             # ...otherwise raise an exception
                             else:
                                 raise Exception("Append failure - target node may not be downstream of source node.  Check the emdpath and the runtime data tree.")
 
-
-
-
     # if a root was added, remove it
     if added_a_root:
         data._root = None
-
 
     # end
     pass
