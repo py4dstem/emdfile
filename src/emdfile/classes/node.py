@@ -6,7 +6,7 @@ from emdfile.classes.utils import EMD_group_types, _get_class
 
 class Node:
     """
-    EMD Node class
+    Base class for all EMD data object classes.
     """
     _emd_group_type = 'node'
     def __init__(
@@ -80,7 +80,6 @@ class Node:
             self.add_to_tree(node)
         except AssertionError:
             self.graft(node, merge_metadata=False)
-
 
     def get_from_tree(self,name):
         """
