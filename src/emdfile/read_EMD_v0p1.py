@@ -43,7 +43,6 @@ class emd_v0p1:
             if 'emd_group_type' in obj.attrs and obj.attrs['emd_group_type'] == 1:
                 self.emds.append(obj)
 
-
 def read_EMD_v0p1(
     filepath,
     verbose = True
@@ -51,13 +50,17 @@ def read_EMD_v0p1(
     """
     File reader for EMD 0.1 files. Returns the data as emd v1.0 files.
 
-    Args:
-        filepath (str or Path): the file path
-        verbose (bool): Extra output for debugging
-    Returns:
-        (emdfile.Array) the data
-    """
+    Parameters
+    ----------
+    filepath : str or Path
+        the file path
+    verbose : bool
+        Extra output for debugging
 
+    Returns
+    -------
+    (emdfile.Array) the data
+    """
     if isinstance(filepath, str):
         filepath = Path(filepath)
 
