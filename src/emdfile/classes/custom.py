@@ -1,9 +1,3 @@
-# Defines the Custom class, which contains any number of EMD base
-# classes as attributes, i.e. they are constructed by composition,
-# rather than inheritance, of the other classes.  Custom classes are
-# themselves EMD base classes and can therefore be nested in other custom
-# classes themselves.
-
 import h5py
 from emdfile.classes.node import Node
 from emdfile.classes.root import Root
@@ -17,10 +11,7 @@ class Custom(Node):
     def __init__(self,name='custom'):
         Node.__init__(self,name=name)
 
-
-
     # read
-
     @classmethod
     def _get_constructor_args(cls,group):
         """
@@ -36,7 +27,6 @@ class Custom(Node):
         _populate_instance method.
         """
         raise Exception(f"Custom class {cls} needs a `_get_constructor_args` method!")
-
 
     def _get_emd_attr_data(self,group):
         """ Loops through h5 groups under group, finding and returning
@@ -54,23 +44,22 @@ class Custom(Node):
             dic[name] = data
         return dic
 
-
-
     # write
     def to_h5(self,group):
         """
         Constructs an h5 group, adds metadata, and adds all attributes
         which point to EMD nodes.
 
-        Accepts:
-            group (h5py Group)
+        Parameters
+        ----------
+        group : h5py Group
 
-        Returns:
-            (h5py Group) the new node's Group
+        Returns
+        -------
+        (h5py Group) the new node's Group
         """
         # Construct the group and add metadata
         grp = Node.to_h5(self,group)
-
         # Add any attributes which are themselves emd nodes
         for k,v in vars(self).items():
             if isinstance(v,Node):
@@ -79,8 +68,4 @@ class Custom(Node):
                     attr_grp = v.to_h5(grp)
                     attr_grp.attrs['emd_group_type'] = 'custom_' + \
                         attr_grp.attrs['emd_group_type']
-
         return grp
-
-
-
