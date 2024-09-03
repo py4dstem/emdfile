@@ -3,8 +3,6 @@ from numbers import Number
 from typing import Optional
 from os.path import basename
 
-
-
 class Metadata:
     """
     Stores metadata in the form of a flat (non-nested) dictionary.

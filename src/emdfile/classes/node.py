@@ -4,7 +4,6 @@ from typing import Optional
 from emdfile.classes import Metadata
 from emdfile.classes.utils import EMD_group_types, _get_class
 
-
 class Node:
     """
     EMD Node class
@@ -441,34 +440,15 @@ class Node:
         # return
         return grp
 
-
-
-class Root(Node):
-    """
-    A Node instance with its .root property set to itself.
-    """
-    _emd_group_type = 'root'
-
-    def __init__(self,name='root'):
-        Node.__init__(self,name=name)
-        self._treepath = ''
-        self._root = self
-
-
-
-
 class Branch:
 
     def __init__(self):
         self._dict = {}
 
-
-
     # Enables adding items to the Branch's dictionary
     def __setitem__(self, key, value):
         assert(isinstance(value,Node)), f"only Node instances can be added to tree. not type {type(value)}"
         self._dict[key] = value
-
 
     # Enables retrieving items at top level,
     # or nested items using 'node1/node2' syntax
@@ -495,18 +475,14 @@ class Branch:
             tree = self._dict[k]._branch
             return tree._getitem_from_list(x)
 
-
     def __delitem__(self,x):
         del(self._dict[x])
-
 
     # return the top level keys and items
     def keys(self):
         return self._dict.keys()
     def items(self):
         return self._dict.items()
-
-
 
     # print the full tree contents to screen
     def print(self):
@@ -541,10 +517,7 @@ class Branch:
                     linelevels=linelevels)
             except AttributeError:
                 pass
-
         pass
-
-
 
     # Displays the top level objects in the Branch
     def __repr__(self):
@@ -555,7 +528,4 @@ class Branch:
             string += "\n"+space+f"    {k} \t\t ({v.__class__.__name__})"
         string += "\n)"
         return string
-
-
-
 

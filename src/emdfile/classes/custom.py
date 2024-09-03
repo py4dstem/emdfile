@@ -5,8 +5,8 @@
 # classes themselves.
 
 import h5py
-
-from emdfile.classes.tree import Node,Root
+from emdfile.classes.node import Node
+from emdfile.classes.root import Root
 from emdfile.classes.utils import _get_class
 
 class Custom(Node):

@@ -1,32 +1,23 @@
-# Defines the Array class, which stores any N-dimensional array-like data.
-# Implements the EMD file standard - https://emdatasets.com/format
-
-from typing import Optional,Union
-import numpy as np
 import h5py
+import numpy as np
+from typing import Optional,Union
 from numbers import Number
 from os.path import basename
-
-from emdfile.classes.tree import Node
+from emdfile.classes.node import Node
 
 class Array(Node):
     """
-    A class which stores any N-dimensional array-like data, plus basic metadata:
-    a name and units, as well as calibrations for each axis of the array, and names
-    and units for those axis calibrations.
+    Stores N-dimensional array-like data plus metadata.
+    For some numpy array x
 
-    In the simplest usage, only a data array is passed:
+    >>> ar = Array( x )
 
-    >>> ar = Array(np.ones((20,20,256,256)))
-
-    will create an array instance whose data is the numpy array passed, and with
-    automatically populated dimension calibrations in units of pixels.
-
-    Additional arguments may be passed to populate the object metadata:
+    creates an Array instance.
+    Calibrations may be passed on instantion
 
     >>> ar = Array(
     >>>     np.ones((20,20,256,256)),
-    >>>     name = 'test_array',
+    >>>     name = '4ddatacube',
     >>>     units = 'intensity',
     >>>     dims = [
     >>>         [0,5],
@@ -48,36 +39,10 @@ class Array(Node):
     >>>     ],
     >>> )
 
-    will create an array with a name and units for its data, where its first two
-    dimensions are in units of nanometers, have pixel sizes of 5nm, and are
-    described by the handles 'rx' and 'ry', and where its last two dimensions
-    are in units of inverse Angstroms, have pixels sizes of 0.01A^-1, and are
-    described by the handles 'qx' and 'qy'.
-
-    Arrays in which the length of each pixel is non-constant are also
-    supported.  For instance,
-
-    >>> x = np.logspace(0,1,100)
-    >>> y = np.sin(x)
-    >>> ar = Array(
-    >>>     y,
-    >>>     dims = [
-    >>>         x
-    >>>     ]
-    >>> )
-
-    generates an array representing the values of the sine function sampled
-    100 times along a logarithmic interval from 1 to 10. In this example,
-    this data could then be plotted with, e.g.
-
-    >>> plt.scatter(ar.dims[0], ar.data)
-
-    If the `slicelabels` keyword is passed, the first N-1 dimensions of the
-    array are treated normally, while the final dimension is used to represent
-    distinct arrays which share a common shape and set of dim vectors.  Thus
+    "Stack-arrays" are constructed by passing `slicelables`
 
     >>> ar = Array(
-    >>>     np.ones((50,50,4)),
+    >>>     np.ones((4,50,50)),
     >>>     name = 'test_array_stack',
     >>>     units = 'intensity',
     >>>     dims = [
@@ -100,17 +65,22 @@ class Array(Node):
     >>>     ]
     >>> )
 
-    will generate a single Array instance containing 4 arrays which each have
-    a shape (50,50) and a common set of dim vectors ['rx','ry'], and which
-    can be indexed into with the names assigned in `slicelabels` using
+    representing a set of M arrays, each of shape N-1 all calibrated by one set
+    of object calibrations, given Array shape N and initial dimension extent M.
+    Above, M is 4 and the arrays are called 'a', 'b', 'c', 'd'.
 
-    >>> ar.get_slice('a')
+    The `dims` argument calibrates the array axes. Constant pixel sizes may
+    be specified as length 2 lists, which will extrapolate linearly. For non-
+    linear pixel extents an array of the dim length should be specified, e.g.
 
-    which will return a 2D (non-stack-like) Array instance with shape (50,50)
-    and the dims assigned above.  The Array attribute .rank is equal to the
-    number of dimensions for a non-stack-like Array, and is equal to N-1
-    for stack-like arrays.
-
+    >>> x = np.logspace(0,1,100)
+    >>> y = np.sin(x)
+    >>> ar = Array(
+    >>>     y,
+    >>>     dims = [
+    >>>         x
+    >>>     ]
+    >>> )
     """
     _emd_group_type = 'array'
 
@@ -125,62 +95,60 @@ class Array(Node):
         slicelabels = None
         ):
         """
-        Accepts:
-            data (np.ndarray): the data
-            name (str): the name of the Array
-            units (str): units for the pixel values
-            dims (variable): calibration vectors for each of the axes of the data
-                array.  Valid values for each element of the list are None,
-                a number, a 2-element list/array, or an M-element list/array
-                where M is the data array.  If None is passed, the dim will be
-                populated with integer values starting at 0 and its units will
-                be set to pixels.  If a number is passed, the dim is populated
-                with a vector beginning at zero and increasing linearly by this
-                step size.  If a 2-element list/array is passed, the dim is
-                populated with a linear vector with these two numbers as the first
-                two elements.  If a list/array of length M is passed, this is used
-                as the dim vector, (and must therefore match this dimension's
-                length). If dims recieves a list of fewer than N arguments for an
-                N-dimensional data array, the extra dimensions are populated as if
-                None were passed, using integer pixel values. If the `dims`
-                parameter is not passed, all dim vectors are populated this way.
-            dim_units (list): the units for the calibration dim vectors. If
-                nothing is passed, dims vectors which have been populated
-                automatically with integers corresponding to pixel numbers
-                will be assigned units of 'pixels', and any other dim vectors
-                will be assigned units of 'unknown'.  If a list with length <
-                the array dimensions, the passed values are assumed to apply
-                to the first N dimensions, and the remaining values are
-                populated with 'pixels' or 'unknown' as above.
-            dim_names (list): labels for each axis of the data array. Values
-                which are not passed, following the same logic as described
-                above, will be autopopulated with the name "dim#" where #
-                is the axis number.
-            slicelabels (None or True or list): if not None, must be True or a
-                list of strings, indicating a "stack-like" array.  In this case,
-                the first N-1 dimensions of the array are treated normally, in
-                the sense of populating dims, dim_names, and dim_units, while the
-                final dimension is treated distinctly: it indexes into
-                distinct arrays which share a set of dimension attributes, and
-                can be sliced into using the string labels from the `slicelabels`
-                list, with the syntax array['label'] or array.get_slice('label').
-                If `slicelabels` is `True` or is a list with length less than the
-                final dimension length, unassigned dimensions are autopopulated
-                with labels `array{i}`. The flag array.is_stack is set to True
-                and the array.rank attribute is set to N-1.
+        Parameters
+        ----------
+        data : np.ndarray
+        name : str
+        units : str
+            units for the pixel values
+        dims : variable
+            calibration vectors for each axis of the data
+            array.  Valid values for each element of the list are None,
+            a number, a 2-element list/array, or an M-element list/array
+            where M is the data array.  If None is passed, the dim will be
+            populated with integer values starting at 0 and its units will
+            be set to pixels.  If a number is passed, the dim is populated
+            with a vector beginning at zero and increasing linearly by this
+            step size.  If a 2-element list/array is passed, the dim is
+            populated with a linear vector with these two numbers as the first
+            two elements.  If a list/array of length M is passed, this is used
+            as the dim vector, (and must therefore match this dimension's
+            length). If dims recieves a list of fewer than N arguments for an
+            N-dimensional data array, the extra dimensions are populated as if
+            None were passed, using integer pixel values. If the `dims`
+            parameter is not passed, all dim vectors are populated this way.
+        dim_units : list
+            the units for the calibration dim vectors. If
+            nothing is passed, dims vectors which have been populated
+            automatically with integers corresponding to pixel numbers
+            will be assigned units of 'pixels', and any other dim vectors
+            will be assigned units of 'unknown'.  If a list with length <
+            the array dimensions, the passed values are assumed to apply
+            to the first N dimensions, and the remaining values are
+            populated with 'pixels' or 'unknown' as above.
+        dim_names : list
+            labels for each axis of the data array. Values
+            which are not passed, following the same logic as described
+            above, will be autopopulated with the name "dim#" where #
+            is the axis number.
+        slicelabels : None or True or list
+            if not None, array will be promoted to a stack array - see object
+            docstring for details. If a list is passed it should specify the
+            sub-array names.
 
-        Returns:
-            A new Array instance
+        Returns
+        -------
+        A new Array instance
         """
+        # instantiate as a None
         super().__init__()
 
-        # populate data and metadata
+        # populate
         self.data = data
         self.name = name
         self.units = units
 
-        ## For array stacks,
-        ## setup labels and N+1'th dimension
+        # For array stacks, setup shape and labels
         if slicelabels is None:
             self.is_stack = False
             self.slicelabels = None
@@ -196,18 +164,14 @@ class Array(Node):
                 slicelabels = slicelabels[:self.depth]
             self.slicelabels = Labels(slicelabels)
 
-
-        ## Setup dim vectors
+        # dim vectors
 
         # set initial state
         self._dims = tuple([None for i in range(self.rank)])
         self._dim_units = tuple(['unknown' for i in range(self.rank)])
         self._dim_names = tuple([f"dim{i}" for i in range(self.rank)])
-
         # expand dims, dim_units, and dim_names to lists of length = rank,
         # padding with None if the lists are too short
-
-        # setup dims
         if dims is None:
             dims = [None for i in range(self.rank)]
         else:
@@ -220,7 +184,7 @@ class Array(Node):
         dim_in_pixels = np.zeros(self.rank, dtype=bool)
         for idx in range(self.rank):
             dim_in_pixels[idx] = dims[idx] is None
-
+        # dim units 
         if dim_units is None:
             dim_units = ['unknown' for i in range(self.rank)]
         else:
@@ -232,7 +196,7 @@ class Array(Node):
         dim_units = np.array(dim_units)
         dim_units[dim_in_pixels] = 'pixels'
         dim_units = tuple(dim_units)
-
+        # dim names
         if dim_names is None:
             dim_names = [f"dim{i}" for i in range(self.rank)]
         else:
@@ -241,7 +205,6 @@ class Array(Node):
                 dim_names = list(dim_names) + [f"dim{i+len(dim_names)}" for i in range(rank-len(dim_names))]
             else:
                 dim_names = dim_names[:self.rank]
-
         # set the dims
         for idx,(d,du,dn) in enumerate(zip(dims,dim_units,dim_names)):
             self.set_dim(
@@ -251,24 +214,18 @@ class Array(Node):
                 name = dn
             )
 
-
-
     # dim vector setter/getter properties and methods
-
     @property
     def dims(self):
         return self._dims
-
     def get_dim(self,n):
         """ Return the n'th dim vector
         """
         assert(isinstance(n,(int,np.integer))), f"Can't retrieve the {n}th dim vector - {n} must be an integer, not type {type(n)}."
         assert(n < self.rank), f"Can't retrieve the {n}th dim vector - {n} must be < {self.rank}"
         return self.dims[n]
-
     # alias
     dim = get_dim
-
     def set_dim(
         self,
         n:int,
@@ -281,12 +238,14 @@ class Array(Node):
         documentation. If `units` and/or `name` are passed, sets these
         values for the n'th dim vector.
 
-        Accepts:
-            n (int): specifies which dim vector
-            dim (list or array): length must be either 2, or equal to the
-                length of the n'th axis of the data array
-            units (Optional, str):
-            name: (Optional, str):
+        Parameters
+        ----------
+        n : int
+            specifies which dim vector
+        dim : list or array
+            length must be either 2, or match the length of the n'th axis
+        units : str
+        name : str
         """
         assert(isinstance(n,(int,np.integer))), f"Can't set the {n}th dim vector - {n} must be an integer, not type {type(n)}."
         assert(n < self.rank), f"Can't set the {n}th dim vector - {n} must be < {self.rank}"
@@ -305,14 +264,12 @@ class Array(Node):
     @property
     def dim_units(self):
         return self._dim_units
-
     def get_dim_units(self,n):
         """ Return the n'th dim vector units
         """
         assert(isinstance(n,(int,np.integer))), f"Can't retrieve the {n}th dim vector - {n} must be an integer, not type {type(n)}."
         assert(n < self.rank), f"Can't retrieve the {n}th dim vector - {n} must be < {self.rank}"
         return self.dim_units[n]
-
     def set_dim_units(
         self,
         n:int,
@@ -321,9 +278,12 @@ class Array(Node):
         """
         Sets the n'th dim vector units to `units`.
 
-        Accepts:
-            n (int): specifies which dim vector
-            units (str): new units
+        Parameters
+        ----------
+        n : int
+            which dim vector
+        units : str
+            new units
         """
         assert(isinstance(n,(int,np.integer))), f"Can't set the {n}th dim vector - {n} must be an integer, not type {type(n)}."
         assert(n < self.rank), f"Can't set the {n}th dim vector - {n} must be < {self.rank}"
@@ -334,14 +294,12 @@ class Array(Node):
     @property
     def dim_names(self):
         return self._dim_names
-
     def get_dim_name(self,n):
         """ Get the n'th dim vector name
         """
         assert(isinstance(n,(int,np.integer))), f"Can't retrieve the {n}th dim vector - {n} must be an integer, not type {type(n)}."
         assert(n < self.rank), f"Can't retrieve the {n}th dim vector - {n} must be < {self.rank}"
         return self.dim_names[n]
-
     def set_dim_name(
         self,
         n:int,
@@ -350,16 +308,18 @@ class Array(Node):
         """
         Sets the n'th dim vector name to `name`.
 
-        Accepts:
-            n (int): specifies which dim vector
-            name (str): new name
+        Parameters
+        ----------
+        n : int
+            which dim vector
+        name : str
+            new name
         """
         assert(isinstance(n,(int,np.integer))), f"Can't set the {n}th dim vector - {n} must be an integer, not type {type(n)}."
         assert(n < self.rank), f"Can't set the {n}th dim vector - {n} must be < {self.rank}"
         self._dim_names = list(self._dim_names)
         self._dim_names[n] = name
         self._dim_names = tuple(self._dim_names)
-
 
     @staticmethod
     def _unpack_dim(dim,length):
@@ -387,17 +347,13 @@ class Array(Node):
         # Expand None
         if dim is None:
             dim = 1
-
         # Expand single numbers
         if isinstance(dim,Number):
             dim = [0,dim]
-
         N = len(dim)
-
         # for string dimensions (used for stack arrays):
         if not isinstance(dim[0],Number):
             assert(N == length), f"For non-numerical dims, the dim vector length must match the array dimension length. Recieved a dim vector of length {N} for an array dimension length of {length}."
-
         # For number-like dimensions:
         if N == length:
             return dim
@@ -418,26 +374,19 @@ class Array(Node):
         except IndexError:
             return True
 
-
-
-
-
     # Shape properties
-
     @property
     def shape(self):
         if not self.is_stack:
             return self.data.shape
         else:
             return self.data.shape[1:]
-
     @property
     def depth(self):
         if not self.is_stack:
             return 0
         else:
             return self.data.shape[0]
-
     @property
     def rank(self):
         if not self.is_stack:
@@ -445,9 +394,7 @@ class Array(Node):
         else:
             return self.data.ndim - 1
 
-
     ## Slicing
-
     def get_slice(self,label,name=None):
         idx = self.slicelabels._dict[label]
         return Array(
@@ -458,7 +405,6 @@ class Array(Node):
             dim_units = self.dim_units,
             dim_names = self.dim_names
         )
-
     def __getitem__(self,x):
         if isinstance(x,str):
             return self.get_slice(x)
@@ -467,21 +413,13 @@ class Array(Node):
         else:
             return self.data[x]
 
-
-
-
-
-
     ## Representation to standard output
-
     def __repr__(self):
-
         if not self.is_stack:
             space = ' '*len(self.__class__.__name__)+'  '
             string = f"{self.__class__.__name__}( A {self.rank}-dimensional array of shape {self.shape} called '{self.name}',"
             string += "\n"+space+"with dimensions:"
             string += "\n"
-
         else:
             space = ' '*len(self.__class__.__name__)+'  '
             string = f"{self.__class__.__name__}( A stack of {self.depth} Arrays with {self.rank}-dimensions and shape {self.shape}, called '{self.name}'"
@@ -492,7 +430,6 @@ class Array(Node):
             string += "\n"
             string += "\n"
             string += "\n" + space + "The Array dimensions are:"
-
         for n in range(self.rank):
             if len(self.dims[n]) >= 3:
                 string += "\n"+space+f"    {self.dim_names[n]} = [{self.dims[n][0]},{self.dims[n][1]},{self.dims[n][2]},...] {self.dim_units[n]}"
@@ -511,14 +448,9 @@ class Array(Node):
             if not self._dim_is_linear(self.dims[n],self.shape[n]):
                 string += "  (*non-linear*)"
         string += "\n)"
-
-
         return string
 
-
-
     # HDF5 read/write
-
     # write
     def to_h5(self,group):
         """
@@ -526,11 +458,13 @@ class Array(Node):
         this Array, tags indicating its EMD type and Python class,
         and the array's data and metadata.
 
-        Accepts:
-            group (h5py Group)
+        Parameters
+        ----------
+        group : h5py Group
 
-        Returns:
-            (h5py Group) the new array's Group
+        Returns
+        -------
+        (h5py Group) the new array's Group
         """
         # Construct group and add metadata
         grp = Node.to_h5(self,group)
@@ -546,22 +480,18 @@ class Array(Node):
 
         # Add the normal dim vectors
         for n in range(self.rank):
-
             # unpack info
             dim = self.dims[n]
             name = self.dim_names[n]
             units = self.dim_units[n]
-
             # compress the dim vector if it's linear
             if self._dim_is_linear(dim,self.shape[n]):
                 dim = dim[:2]
-
             # write
             dset = grp.create_dataset(
                 f"dim{n}",
                 data = dim
             )
-
             dset.attrs.create('name',str(name))
             dset.attrs.create('units',str(units))
 
@@ -569,7 +499,6 @@ class Array(Node):
         if self.is_stack:
             n = self.rank
             dim = [s.encode('utf-8') for s in self.slicelabels]
-
             # write
             dset = grp.create_dataset(
                 f"dim{n}",
@@ -579,8 +508,6 @@ class Array(Node):
 
         # return
         return grp
-
-
 
     # read
     @classmethod
@@ -631,13 +558,6 @@ class Array(Node):
             'slicelabels' : slicelabels
         }
 
-
-
-
-
-########### END OF CLASS ###########
-
-
 # List subclass for accessing data slices with a dict
 class Labels(list):
 
@@ -655,5 +575,3 @@ class Labels(list):
         self._dict = {}
         for idx,label in enumerate(self):
             self._dict[label] = idx
-
-

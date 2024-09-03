@@ -1,8 +1,6 @@
-
 import inspect
 import types
 import sys
-
 
 # Define the EMD group types
 

@@ -1,20 +1,12 @@
-# Defines a class, PointList, for storing / accessing / manipulating data
-# in the form of lists of vectors in named dimensions.  Wraps numpy
-# structured arrays.
-
-import numpy as np
 import h5py
+import numpy as np
 from typing import Optional
 from os.path import basename
-
-from emdfile.classes.tree import Node
-
+from emdfile.classes.node import Node
 
 class PointList(Node):
     """
-    A wrapper around structured numpy arrays, with read/write functionality in/out of
-    EMD formatted HDF5 files.
-
+    Wraps numpy structured arrays
     """
     _emd_group_type = 'pointlist'
 
@@ -24,15 +16,16 @@ class PointList(Node):
         name: Optional[str] = 'pointlist',
         ):
         """
-		Instantiate a PointList.
+        Parameters
+        ----------
+        data : structured numpy ndarray
+            the data
+        name : str
+            name for the PointList
 
-        Args:
-            data (structured numpy ndarray): the data; the dtype of this array will
-                specify the fields of the PointList.
-            name (str): name for the PointList
-
-        Returns:
-            a PointList instance
+        Returns
+        -------
+        (PointList)
         """
         super().__init__()
 
@@ -46,7 +39,6 @@ class PointList(Node):
         else:
             self._fields = ('',)
             self._types = (self._dtype,)
-
 
     # properties
     @property
@@ -74,9 +66,7 @@ class PointList(Node):
     def length(self):
         return len(self)
 
-
-    ## Add, remove, sort data
-
+    # Add, remove, sort data
     def __add__(self, data):
         """
         Append a numpy structured array and return the concatenated pointlist.
@@ -90,20 +80,17 @@ class PointList(Node):
             name = self.name,
             data = ans
         )
-
     def add(self, data):
         """
         Appends a numpy structured array. Its dtypes must agree with the existing data.
         """
         self.data = (self + data).data
-
     def remove(self, mask):
         """ Removes points wherever mask==True
         """
         assert np.atleast_1d(mask).shape[0] == self.length, "deletemask must be same length as the data"
         inds = mask.nonzero()[0]
         self.data = np.delete(self.data, inds)
-
     def sort(self, field, order='ascending'):
         """
         Sorts the point list according to field,
@@ -117,41 +104,34 @@ class PointList(Node):
         else:
             self.data = np.sort(self.data, order=field)[::-1]
 
-
     ## Copy, copy+modify PointList
-
     def copy(self, name=None):
         """ Returns a copy of the PointList. If name=None, sets to `{name}_copy`
         """
         name = name if name is not None else self.name+"_copy"
-
         pl = PointList(
             data = np.copy(self.data),
             name = name)
-
         for k,v in self.metadata.items():
             pl.metadata = v.copy(name=k)
-
         return pl
-
     def add_fields(self, new_fields, name=''):
         """
         Creates a copy of the PointList, but with additional fields given by new_fields.
 
-        Args:
-            new_fields: a list of 2-tuples, ('name', dtype)
-            name: a name for the new pointlist
+        Parameters
+        ----------
+        new_fields : list of 2-tuples, ('name', dtype)
+        name : string
         """
         dtype = []
         for f,t in zip(self.fields,self.types):
             dtype.append((f,t))
         for f,t in new_fields:
             dtype.append((f,t))
-
         data = np.zeros(self.length, dtype=dtype)
         for f in self.fields:
             data[f] = np.copy(self.data[f])
-
         return PointList(data=data, name=name)
 
     def add_data_by_field(self, data, fields=None):
@@ -160,29 +140,23 @@ class PointList(Node):
         given by `fields`. If `fields` is not specified, assumes the data
         arrays are in the same order as self.fields
 
-        Args:
-            data (list): arrays of data to add to each field
+        Parameters
+        ----------
+        data : list
+            arrays of data to add to each field
         """
-
         if data[0].ndim == 0:
             L = 1,
         else:
             L = data[0].shape[0]
         newdata = np.zeros(L,dtype=self.dtype)
-
         _fields = self.fields if fields is None else fields
-
         for d,f in zip(data, _fields):
             newdata[f] = d
-
         self.data = np.append(self.data,newdata)
 
-
-
-
-    ## Representation to standard output
+    # Representation to standard output
     def __repr__(self):
-
         space = ' '*len(self.__class__.__name__)+'  '
         string = f"{self.__class__.__name__}( A length {self.length} PointList called '{self.name}',"
         string += "\n"+space+f"with {len(self.fields)} fields:"
@@ -191,18 +165,13 @@ class PointList(Node):
         for f,t in zip(self.fields,self.types):
             string += "\n"+space+f"{f}{(space2-len(f))*' '}({str(t)})"
         string += "\n)"
-
         return string
-
 
     # Slicing
     def __getitem__(self, v):
         return self.data[v]
 
-
-
     # HDF5 i/o
-
     # write
     def to_h5(self,group):
         """
@@ -210,15 +179,16 @@ class PointList(Node):
         this PointList, tags indicating its EMD type and Python class,
         and the pointlist's data and metadata.
 
-        Accepts:
-            group (h5py Group)
+        Parameters
+        ----------
+        group : h5py Group
 
-        Returns:
-            (h5py Group) the new pointlist's group
+        Returns
+        -------
+        h5py Group : the new pointlist's group
         """
         # Construct group and add metadata
         grp = Node.to_h5(self,group)
-
         # Add data
         for f,t in zip(self.fields,self.types):
             group_current_field = grp.create_dataset(
@@ -226,12 +196,8 @@ class PointList(Node):
                 data = self.data[f]
             )
             group_current_field.attrs.create("dtype", np.string_(t))
-
         # Return
         return grp
-
-
-
 
     # read
     @classmethod
@@ -247,18 +213,14 @@ class PointList(Node):
             curr_dtype = group[field].attrs["dtype"].decode('utf-8')
             dtype.append((field,curr_dtype))
         length = len(group[fields[0]])
-
         # Get data
         data = np.zeros(length,dtype=dtype)
         if length > 0:
             for field in fields:
                 data[field] = np.array(group[field])
-
         # make args dictionary and return
         return {
             'data' : data,
             'name' : basename(group.name)
         }
-
-
 
