@@ -9,7 +9,6 @@ class Node:
     EMD Node class
     """
     _emd_group_type = 'node'
-
     def __init__(
         self,
         name: Optional[str] = 'node'

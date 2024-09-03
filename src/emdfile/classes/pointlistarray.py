@@ -11,7 +11,6 @@ class PointListArray(Node):
     An 2D array of PointLists which share common coordinates.
     """
     _emd_group_type = "pointlistarray"
-
     def __init__(
         self,
         dtype,

@@ -7,7 +7,6 @@ class Custom(Node):
     """
     """
     _emd_group_type = 'custom'
-
     def __init__(self,name='custom'):
         Node.__init__(self,name=name)
 

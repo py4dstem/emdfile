@@ -9,7 +9,6 @@ class PointList(Node):
     Wraps numpy structured arrays
     """
     _emd_group_type = 'pointlist'
-
     def __init__(
         self,
         data: np.ndarray,
