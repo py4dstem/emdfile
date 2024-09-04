@@ -7,13 +7,15 @@ from emdfile.classes.node import Node
 
 class Array(Node):
     """
-    Stores N-dimensional array-like data plus metadata.
+    Array instances store N-dimensional array-like data.
+
+    Instantiation
+    -------------
     For some numpy array x
 
     >>> ar = Array( x )
 
-    creates an Array instance.
-    Calibrations may be passed on instantion
+    creates an Array instance.  Calibrations may be passed on instantion
 
     >>> ar = Array(
     >>>     np.ones((20,20,256,256)),
@@ -39,7 +41,7 @@ class Array(Node):
     >>>     ],
     >>> )
 
-    "Stack-arrays" are constructed by passing `slicelables`
+    "Stack-arrays" are constructed by passing the `slicelables` argument
 
     >>> ar = Array(
     >>>     np.ones((4,50,50)),
@@ -81,6 +83,53 @@ class Array(Node):
     >>>         x
     >>>     ]
     >>> )
+
+    Data Access
+    -----------
+    For an Array instance ar, data can be accessed as
+
+        >>> ar.data
+
+    or can be accessed using numpy-like slicing into the object itself, e.g.
+
+        >>> ar[:]
+
+    For stack-arrays, a slice called 'a' can be retrieved with
+
+        >>> ar['a']
+
+    Dimension Vectors
+    -----------------
+    The set of all dim vectors can be retrieved with
+
+        >>> ar.dims
+
+    and the n'th dim vector with
+
+        >>> ar.get_dim(n)
+
+    Dim vectors should be modified using
+
+        >>> ar.set_dim
+
+    to write a new dimension vector or
+
+        >>> ar.set_dim_units
+        >>> ar.set_dim_name
+
+    to modify dim vector metadata only.
+
+    Shape Information
+    -----------------
+    Shape information is accessible as normal through
+
+        >>> ar.data.shape
+
+    Additionally, the following shape properties account for stack arrays
+
+        >>> ar.depth    # 0 for non stacks; # arrays for stacks
+        >>> ar.rank     # N for non stacks; N-1 for stacks
+        >>> ar.shape    # length N for non stacks; length N-1 for stacks
     """
     _emd_group_type = 'array'
     def __init__(

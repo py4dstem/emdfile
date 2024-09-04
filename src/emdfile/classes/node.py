@@ -9,15 +9,16 @@ class Node:
     Base class for all EMD data object classes.
 
     Nodes include an interface for metadata and for their EMD data tree.
-    No explicit interface is included for data itself and will vary according to
-    their subclass (Array, PointList, etc).
+    The Node class itself does not include additional data; interface to
+    data blocks therefore vary according to subclass (Array, PointList, etc.)
+
     Nodes also include their own read/write machinery. For downstream package
     integration - i.e. defining your own classes which inherit from emdfile
-    classes - modifications should be made to these methods for read and write
-    operations to function correctly - see below.
+    classes - some modifications should be made for read and write operations
+    to function correctly, discussed further below.
 
-    Interface
-    ---------
+    Interface: Metdata and Data Tree
+    --------------------------------
     Metadata is found at
 
         >>> node.metadata
@@ -66,7 +67,7 @@ class Node:
 
         >>> node.root
 
-    Downstream Integration - Read & Write New Classes
+    Downstream Integration: Read & Write New Classes
     -------------------------------------------------
     For simple emdfile usage, this section is not required; the info that follows
     is needed for creating new classes inheriting from emdfile classes.
@@ -145,7 +146,7 @@ class Node:
     then add any code required to populate the new class instance with the
     required data.
 
-    Downstream Integration - Hooking Dependent Packages
+    Downstream Integration: Hooking Dependent Packages
     ---------------------------------------------------
     If another Python module defines its own child classes of emdfile classes,
     add

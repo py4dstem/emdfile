@@ -1,6 +1,6 @@
-import inspect
-import types
 import sys
+import types
+import inspect
 
 # Define the EMD group types
 EMD_base_group_types = (
