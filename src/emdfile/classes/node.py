@@ -7,6 +7,72 @@ from emdfile.classes.utils import EMD_group_types, _get_class
 class Node:
     """
     Base class for all EMD data object classes.
+
+    Node's include an interface for metadata and for their EMD data tree.
+    No explicit interface is included for data itself and will vary according to
+    their subclass (Array, PointList, etc).
+    Nodes also include their own read/write machinery. Classes inheriting from
+    Node must overwrite these methods to function correctly - see below.
+
+    Interface
+    ---------
+    Metadata is found at
+
+        >>> node.metadata
+
+    and contains a dictionary of any number of Metadata instances.
+    New metadata can be added using
+
+        >>> node.metadata = Metadata(name='new_metadata', data={'item':1})
+
+    which adds the new instance to the dictionary.
+    The node may have data depending on its subclass (Array, Pointlist, etc).
+    The
+
+        >>> node.tree
+
+    method interfaces with upstream and downstream nodes in the same EMD tree,
+    including displaying the tree, fetching another node, cutting a branch of
+    the tree off to create a new tree, or grafting to/from another tree or
+    subtree.  Usage includes
+
+        >>> node.tree()                # show the tree downstream of this node
+        >>> node.tree(show=True)       # show the full tree from the root node
+        >>> node.tree(show=False)      # show from current node
+        >>> node.tree('path/to/node')  # return the node at the chosen location
+        >>> node.tree('/path/to/node') # specifiy the location starting from root
+        >>> node.tree(node)            # add a child node; must be a Node instance
+        >>> node.tree(cut=True)        # remove & return a branch; include root metadata
+        >>> node.tree(cut=False)       # discard root metadata
+        >>> node.tree(cut='copy')      # copy root metadata
+        >>> node.tree(graft=node)      # remove & graft a branch; include root metadata
+        >>> node.tree(graft=(node,True))    # as above
+        >>> node.tree(graft=(node,False))   # discard root metadata
+        >>> node.tree(graft=(node,'copy'))  # copy root metadata
+
+    Showing the tree, retrieving or adding nodes, and cutting or grafting
+    branches are also possible using the
+
+        >>> node.show_tree
+        >>> node.get_from_tree
+        >>> node.add_to_tree
+        >>> node.cut_from_tree
+        >>> node.graft
+
+    methods.  See their docstrings for more info.
+    The node root is found at
+
+        >>> node.root
+
+    Read / Write
+    ------------
+    The emdfile read and write function depend on each Node type containing
+
+        >>> node.to_h5
+        >>> node.from_h5
+
+    methods, which write class instances to HDF5 files and to generate new
+    instances from appropriately formatted HDF5 groups, respectively.
     """
     _emd_group_type = 'node'
     def __init__(
