@@ -8,11 +8,13 @@ class Node:
     """
     Base class for all EMD data object classes.
 
-    Node's include an interface for metadata and for their EMD data tree.
+    Nodes include an interface for metadata and for their EMD data tree.
     No explicit interface is included for data itself and will vary according to
     their subclass (Array, PointList, etc).
-    Nodes also include their own read/write machinery. Classes inheriting from
-    Node must overwrite these methods to function correctly - see below.
+    Nodes also include their own read/write machinery. For downstream package
+    integration - i.e. defining your own classes which inherit from emdfile
+    classes - modifications should be made to these methods for read and write
+    operations to function correctly - see below.
 
     Interface
     ---------
@@ -64,15 +66,92 @@ class Node:
 
         >>> node.root
 
-    Read / Write
-    ------------
-    The emdfile read and write function depend on each Node type containing
+    Downstream Integration - Read & Write New Classes
+    -------------------------------------------------
+    For simple emdfile usage, this section is not required; the info that follows
+    is needed for creating new classes inheriting from emdfile classes.
+
+    Each Node contains
 
         >>> node.to_h5
         >>> node.from_h5
 
-    methods, which write class instances to HDF5 files and to generate new
+    methods, which write class instances to HDF5 files and generate new
     instances from appropriately formatted HDF5 groups, respectively.
+    Guidelines for modifying these methods to create new classes follow.
+
+    .to_h5
+    ------
+    This method will create a new HDF5 group and populate it with everything
+    in node.metadata, top level group tags, and depending on the node class
+    type, some data.  See the .to_h5 docstring for individual classes for
+    description of that data.
+
+    In cases where additional data needs to be written to the file, first ask
+    - can the data be added to node.metadata?
+    - can the data be included by inheriting a different emd node type (e.g.
+      a custom node?)
+    If the data can be easily included with these methods, no modification of
+    .to_h5 should be needed.
+
+    Otherwise, .to_h5 may be overwritten in your class.  The new method should
+    begin
+
+        >>> def to_h5(self, group):
+        >>>     """ describe the data being included """
+        >>>     grp = ParentClass.to_h5(self, group)
+        >>>     ...
+
+    where `ParentClass` is the class yours inherits from.  This will create the
+    HDF5 group you're writing to and add all the data normally included. Add
+    any additional required code, then conclude with
+
+        >>> return grp
+
+    .from_h5
+    --------
+    This file should not require modification in most instances. Instead, two
+    helper methods it calls may be overwritten.  When run, node.from_h5 calls
+
+        >>> node._get_constructor_args
+        >>> node._populate_instance
+
+    methods.  The first method retreives the arguments which will be passed to
+    the class __init__ method from the HDF5 file.  The second method is called
+    post-instantiation to perform any additional setup or modification of
+    the new instance.
+
+    node._get_constructor_args should be modified to return to arguments and
+    values your class' __init__ method expects.  Your new method should begin
+
+        >>> @classmethod
+        >>> def _get_constructor_args(cls, group):
+
+    and end
+
+        >>> return args
+
+    where `args` is a dictionary of the __init__ method inputs. You can use
+
+        >>> parent_class_args = ParentClass._get_constructor_args(group)
+
+    to retrieve standard argument/value pairs from the parent class. See the
+    individual class ._get_constructor_args docstrings for the output
+    dictionary keys.
+
+    If your class contains data which should be present after reading from
+    file which will not be included during instantiation, overwrite the
+    node._populate_instance method.  Begin with
+
+        >>> def _populate_instance(self, group):
+
+    then add any code required to populate the new class instance with the
+    required data.
+
+    Downstream Integration - Hooking Dependent Packages
+    ---------------------------------------------------
+    # TODO
+    emdfile hook
     """
     _emd_group_type = 'node'
     def __init__(
@@ -470,9 +549,9 @@ class Node:
     # write
     def to_h5(self,group):
         """
-        Takes an h5py Group instance and creates a subgroup containing
-        this node, tags indicating the groups EMD type and Python class,
-        and any metadata in this node.
+        Creates a subgroup in `group` and writes this node into that group,
+        including the group tags (emd_group_type, python_class), and the
+        node's metadata.
 
         Parameters
         ----------
