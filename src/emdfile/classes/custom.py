@@ -14,16 +14,17 @@ class Custom(Node):
     @classmethod
     def _get_constructor_args(cls,group):
         """
-        Takes a group, and returns a dictionary of args/values
-        to pass to the class constructor.
+        Takes an h5py Group corresponding to some EMD node, and returns a
+        dictionary of arguments/values to pass to the corresponding class
+        constructor.
 
-        This function needs to be written for any child classes;
-        subclassing but failing to overwrite this method will
-        throw a runtime error. You'll probably want to include
-        {'name' : basename(group.name)}. To retrieve the data stored in
-        a Python class instance attribute, use self._get_emd_attr_data.
-        To populate subsequent to instance construction, add a
-        _populate_instance method.
+        Classes inheriting from Custom are required to overwrite this method.
+        See the Node class docstring for additional information. To retrieve
+        all custom sub-nodes, use ._get_emd_attr_data. If metadata items
+        are needed for instantiation, a Node can be created containing the
+        metadata only using
+
+            >>> _node = Node.from_h5(group)
         """
         raise Exception(f"Custom class {cls} needs a `_get_constructor_args` method!")
 
@@ -46,8 +47,12 @@ class Custom(Node):
     # write
     def to_h5(self,group):
         """
-        Constructs an h5 group, adds metadata, and adds all attributes
-        which point to EMD nodes.
+        Creates a subgroup in `group` and writes this node into that group,
+        including the group tags (emd_group_type, python_class), and the
+        node's metadata.
+
+        Additionally, for every attribute which yields a Node instance,
+        writes that node to a new child group using it's class .to_h5 method.
 
         Parameters
         ----------

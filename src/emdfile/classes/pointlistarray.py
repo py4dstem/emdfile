@@ -131,9 +131,12 @@ class PointListArray(Node):
     # write
     def to_h5(self,group):
         """
-        Takes an h5py Group instance and creates a subgroup containing
-        this PointListArray, tags indicating its EMD type and Python class,
-        and the pointlistarray's data and metadata.
+        Creates a subgroup in `group` and writes this node into that group,
+        including the group tags (emd_group_type, python_class), and the
+        node's metadata.
+
+        Additionally writes PointListArray data including the data itself,
+        the array shape, and the data dtype.
 
         Parameters
         ----------
@@ -162,7 +165,9 @@ class PointListArray(Node):
     @classmethod
     def _get_constructor_args(cls,group):
         """
-        Returns a dictionary of args/values to pass to the class constructor
+        Takes an h5py Group corresponding to some EMD node, and returns a
+        dictionary of arguments/values to pass to the corresponding class
+        constructor.
         """
         # Get the DataSet
         dset = group['data']

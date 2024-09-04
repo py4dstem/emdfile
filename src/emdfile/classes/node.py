@@ -135,13 +135,10 @@ class Node:
 
         >>> parent_class_args = ParentClass._get_constructor_args(group)
 
-    to retrieve standard argument/value pairs from the parent class. See the
-    individual class ._get_constructor_args docstrings for the output
-    dictionary keys.
-
-    If your class contains data which should be present after reading from
-    file which will not be included during instantiation, overwrite the
-    node._populate_instance method.  Begin with
+    to retrieve standard argument/value pairs from the parent class. The output
+    dictionary keys are identical to the input argument names for the class
+    constructors, i.e. for Array instances the keys are 'data', 'name', 'units',
+    'dims', 'dim_names', 'dim_units', and 'slicelabels'.
 
         >>> def _populate_instance(self, group):
 
@@ -503,8 +500,9 @@ class Node:
     @classmethod
     def _get_constructor_args(cls,group):
         """
-        Takes a group, and returns a dictionary of args/values
-        to pass to the class constructor
+        Takes an h5py Group corresponding to some EMD node, and returns a
+        dictionary of arguments/values to pass to the corresponding class
+        constructor.
         """
         # Nodes contain only metadata
         return {

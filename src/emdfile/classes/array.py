@@ -453,9 +453,13 @@ class Array(Node):
     # write
     def to_h5(self,group):
         """
-        Takes an h5py Group instance and creates a subgroup containing
-        this Array, tags indicating its EMD type and Python class,
-        and the array's data and metadata.
+        Creates a subgroup in `group` and writes this node into that group,
+        including the group tags (emd_group_type, python_class), and the
+        node's metadata.
+
+        Additionally writes Array data including the array itself, the
+        calibration dimension vectors, units, and if the array is a stack-array,
+        the slice labels.
 
         Parameters
         ----------
@@ -512,7 +516,9 @@ class Array(Node):
     @classmethod
     def _get_constructor_args(cls,group):
         """
-        Returns a dictionary of args/values to pass to the class constructor
+        Takes an h5py Group corresponding to some EMD node, and returns a
+        dictionary of arguments/values to pass to the corresponding class
+        constructor.
         """
         # get data
         dset = group['data']
