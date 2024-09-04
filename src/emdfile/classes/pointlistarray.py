@@ -8,7 +8,48 @@ from emdfile.classes.pointlist import PointList
 
 class PointListArray(Node):
     """
-    An 2D array of PointLists which share common coordinates.
+    A PointListArray instance comprises a 2D grid of PointLists, each sharing a
+    single dtype and set of fields, and each having any variable length. It
+    therefore represents a "ragged array" in 2+1 dimensions, i.e. with two
+    dimensions of a fixed shape and one of variable length, embedded in an
+    M dimensional space for PointLists with M fields.
+
+    Instantiation
+    -------------
+    Calling
+
+        >>> pla = PointListArray(
+        >>>     [('a',float),('b',float)],
+        >>>     (5,5)
+        >>> )
+
+    will create a 5x5 PointListArray instance with fields 'a' and 'b', and
+
+        >>> dt = np.dtype([('a',float,('b',float)])
+        >>> for x in range(5):
+        >>>     for y in range(5):
+        >>>         pla[x,y] += np.zeros(x+y,dt)
+
+    will populate it with some data. Element assignment currently may only be
+    made to PointLists, so using direct assignment the code above must be
+
+        >>> dt = np.dtype([('a',float,('b',float)])
+        >>> for x in range(5):
+        >>>     for y in range(5):
+        >>>         pla[x,y] = PointList(np.zeros(x+y,dt))
+
+    Attributes & Methods
+    --------------------
+    PointListArrays include attributes
+
+        >>> pla.shape
+        >>> pla.dtype
+        >>> pla.fields
+
+    and methods
+
+        >>> pla.copy        # returns a copy
+        >>> pla.add_fields  # returns a copy with additional fields
     """
     _emd_group_type = "pointlistarray"
     def __init__(
