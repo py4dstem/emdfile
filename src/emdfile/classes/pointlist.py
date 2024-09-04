@@ -6,7 +6,58 @@ from emdfile.classes.node import Node
 
 class PointList(Node):
     """
-    Wraps numpy structured arrays
+    PointList instances represent sets of points in some M dimensional space.
+    Each dimension is given by a named field and has its own dtype. Internally,
+    this data corresponds to a numpy structured array.
+
+    Instantiation
+    -------------
+    For some numpy structured array like
+
+        >>> x = np.ones(
+        >>>     10,
+        >>>     dtype = [('x',float),('y',int)]
+        >>> )
+
+    then calling
+
+        >>> pl = PointList(
+        >>>     x,
+        >>>     name = 'my_pointlist',
+        >>> )
+
+    will create a pointlist of length 10 with fields 'x' and 'y'.
+
+    Data Access
+    -----------
+    The data can be accessed by
+
+        >>> pl.data
+
+    or by numpy-like slicing into the object directly
+
+        >>> pl[:]
+
+    and he individual fields can be accessed by slicing like
+
+        >>> pl['x']
+
+    Properties & Methods
+    --------------------
+    The following are valid pointlist properties or constructions
+
+        >>> pl.dtype
+        >>> pl.fields
+        >>> pl.length == len(pl)
+
+    The following are valid methods
+
+        >>> pl.copy()                 # return a copy
+        >>> pl.add(data)              # concatenates additional data
+        >>> pl + data                 # concatenates additional data
+        >>> pl.remove(mask)           # removes indicated data points
+        >>> pl.sort('x','ascending')  # sort by the selected field
+        >>> pl.add_fields(new_fields) # return a new pointlist with added fields
     """
     _emd_group_type = 'pointlist'
     def __init__(
@@ -132,7 +183,6 @@ class PointList(Node):
         for f in self.fields:
             data[f] = np.copy(self.data[f])
         return PointList(data=data, name=name)
-
     def add_data_by_field(self, data, fields=None):
         """
         Add a list of data arrays to the PointList, in the fields
