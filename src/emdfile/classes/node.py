@@ -150,8 +150,24 @@ class Node:
 
     Downstream Integration - Hooking Dependent Packages
     ---------------------------------------------------
-    # TODO
-    emdfile hook
+    If another Python module defines its own child classes of emdfile classes,
+    add
+
+        >>> _emd_hook = True
+
+    as a global variable in its top-level namespace (e.g. in the top level
+    __init__.py file). This ensures that emdfile is able to find the appropriate
+    class definition when reading instances of this class from files.
+
+    Extras
+    ------
+    Sometimes a class method will generate data which is itself an emdfile node.
+    Decorating such a method with
+
+        >>> @newnode
+
+    modifies the mathod such that it (1) adds the new node to the tree of the
+    generating node, and (2) adds metadata describing how that node was made.
     """
     _emd_group_type = 'node'
     def __init__(
@@ -191,7 +207,7 @@ class Node:
     def show_tree(self,root=False):
         """
         Display the object tree. If `root` is False, displays the branch
-        of the tree downstream from this node.  If `root` is True, displays
+        of the tree downstream from this node, and if True, displays
         the full tree from the root node.
         """
         assert(isinstance(root,bool))
@@ -203,9 +219,9 @@ class Node:
 
     def add_to_tree(self,node):
         """
-        Add an unrooted node as a child of the current, rooted node.
-        To move an already rooted node/branch, use `.graft()`.
-        To create a rooted node, use `Root()`.
+        Add `node` to the current tree as a child of this node.
+        Note that if `node` has a root, this will error out - in this case, use
+        either .graft or .force_add_to_tree instead.
         """
         assert(isinstance(node,Node))
         assert(self.root is not None), "Can't add objects to an unrooted node. See the Node docstring for more info."
@@ -216,10 +232,11 @@ class Node:
 
     def force_add_to_tree(self,node):
         """
-        Add node `node` as a child of the current node, whether or not
-        `node` is rooted.  If it's unrooted, performs a simple add. If
-        it is rooted, performs a graft, excluding the root metadata
-        from `node`.
+        Add `node` to the current tree as a child of this node, whether or not
+        `node` has a root.  If it has no root, performs a simple add. If has a
+        root, performs a graft, excluding the root metadata from `node`. Note
+        that this means the branch downstream of `node` will also be moved to
+        the current tree.
         """
         try:
             self.add_to_tree(node)
@@ -228,10 +245,19 @@ class Node:
 
     def get_from_tree(self,name):
         """
-        Finds and returns an object from an EMD tree using the string
-        key `name`, with '/' delimiters between 'parent/child' nodes.
-        Search from the root node by adding a leading '/'; otherwise,
-        searches from the current node.
+        Finds and returns the node from the current tree matching `name`, which
+        must be a string with '/' delimiters between 'parent/child' nodes.
+        Search from the current node, or from the root node if `name` begins
+        with '/'. So
+
+            >>> self.get_from_tree('x/y')
+
+        fetches node 'y' which is under node 'x' which is under the current node,
+        and
+
+            >>> self.get_from_tree('/a/b')
+
+        fetches node 'b' which is under 'a' which is under the root node.
         """
         if name == '':
             return self.root
@@ -242,23 +268,22 @@ class Node:
 
     def _graft(self,node,merge_metadata=True):
         """
-        Moves the branch beginning at this node onto another tree at
-        targed point `node`.
+        Grafts a branch from one EMD tree onto another. The branch beginning at
+        this node is moved onto `node`'s tree underneath `node`.
 
-        This is the reverse of the behavior of self.graft(node), which moves
-        the branch on some other tree beginning at `node` onto this tree
-        starting at this node. In other words, self.graft() grafts onto self,
-        while self._graft() grafts from self.
+        For the reverse - i.e. grafting *to* this tree *from* another tree -
+        use the .graft method.
 
         Parameters
         ----------
         node : Node
         merge_metadata : True, False, 'copy', or 'overwrite'
-            if True adds the new root's metadata to the old root, skipping
-            entries that exist in both; overwrite is identical, but overwrites
-            entries that exist in both; if False adds no metadata to the new
-            root; if 'copy' adds copies of all metadata from the old root to
-            the new root.
+            Specifies how root metadata should be treated.  If True, adds the
+            scion (incoming) root metadata to the stock (receiving) root,
+            skipping entries that exist in both.  If False, adds no metadata.
+            If "overwrite", entries existing in both scion and stock root
+            metadata are overwritten.  If "copy", scion root metadata are
+            copied to the stock root.
 
         Returns
         -------
@@ -316,18 +341,22 @@ class Node:
 
     def graft(self,node,merge_metadata=True):
         """
-        Moves the branch beginning node onto this tree at this node.
+        Grafts a branch from one EMD tree onto another. The branch beginning at
+        `node` is moved onto this tree underneath this node.
 
-        For the reverse (i.e. grafting from this tree onto another tree)
+        For the reverse - i.e. grafting *from* this tree *to* another tree -
         either use that tree's .graft method, or use this tree's ._graft.
 
         Parameters
         ----------
         node : Node
-        merge_metadata : True, False, or 'copy'
-            if True adds the old root's metadata to the new root; if False adds
-            no metadata to the new root; if 'copy' adds copies of all metadata
-            from the old root to the new root.
+        merge_metadata : True, False, 'copy', or 'overwrite'
+            Specifies how root metadata should be treated.  If True, adds the
+            scion (incoming) root metadata to the stock (receiving) root,
+            skipping entries that exist in both.  If False, adds no metadata.
+            If "overwrite", entries existing in both scion and stock root
+            metadata are overwritten.  If "copy", scion root metadata are
+            copied to the stock root.
 
         Returns
         -------
@@ -340,19 +369,16 @@ class Node:
 
     def cut_from_tree(self,root_metadata=True):
         """
-        Removes a branch from an object tree at this node.
-
-        A new root node is created under this object
-        with this object's name.  Metadata from
-        the current root is transferred/not transferred
-        to the new root according to the value of `root_metadata`.
+        Removes from the tree the branch beginning at this node, and returns it
+        as a new tree.  A new root is created at the base of the tree named
+        '{old_root_name}_cut_{this_node_name}'.
 
         Parameters
         ----------
         root_metadata : True, False, or 'copy'
-            if True adds the old root's metadata to the new root; if False adds
-            no metadata to the new root; if 'copy' adds copies of all metadata
-            from the old root to the new root.
+            Specifies root metadata handling.  If True, adds metadata from the
+            original tree root to the new root.  If False, adds no metadata.
+            If 'copy', copies metadata from the old root to the new root.
 
         Returns
         -------
@@ -369,25 +395,19 @@ class Node:
         """
         Usages -
 
-            >>> .tree()             # show tree from current node
-            >>> .tree(show=True)    # show from root
-            >>> .tree(show=False)   # show from current node
-            >>> .tree(add=node)     # add a child node
-            >>> .tree(get='path')   # return a '/' delimited child node
-            >>> .tree(get='/path')  # as above, starting at root
-            >>> .tree(cut=True)     # remove/return a branch, keep root metadata
-            >>> .tree(cut=False)    # remove/return a branch, discard root md
-            >>> .tree(cut='copy')   # remove/return a branch, copy root metadata
-            >>> .tree(graft=node)   # remove/graft a branch, keeping root metadata
-            >>> .tree(graft=(node,True))    # as above
-            >>> .tree(graft=(node,False))   # as above, discard root metadata
-            >>> .tree(graft=(node,'copy'))  # as above, copy root metadata
-
-        The show, add, and get methods can be accessed directly with
-
-            >>> .tree(arg)
-
-        for an arg of the appropriate type (bool, Node, and string).
+            >>> node.tree()                # show the tree downstream of this node
+            >>> node.tree(show=True)       # show the full tree from the root node
+            >>> node.tree(show=False)      # show from current node
+            >>> node.tree('path/to/node')  # return the node at the chosen location
+            >>> node.tree('/path/to/node') # specifiy the location starting from root
+            >>> node.tree(node)            # add a child node; must be a Node instance
+            >>> node.tree(cut=True)        # remove & return a branch; include root metadata
+            >>> node.tree(cut=False)       # discard root metadata
+            >>> node.tree(cut='copy')      # copy root metadata
+            >>> node.tree(graft=node)      # remove & graft a branch; include root metadata
+            >>> node.tree(graft=(node,True))    # as above
+            >>> node.tree(graft=(node,False))   # discard root metadata
+            >>> node.tree(graft=(node,'copy'))  # copy root metadata
         """
         # if `arg` is passed, choose behavior from its type
         if isinstance(arg,bool):
@@ -551,7 +571,7 @@ class Node:
         """
         Creates a subgroup in `group` and writes this node into that group,
         including the group tags (emd_group_type, python_class), and the
-        node's metadata.
+        node's metadata. No data beyond metadata and tags is written.
 
         Parameters
         ----------
