@@ -17,8 +17,8 @@ class Node:
     classes - some modifications should be made for read and write operations
     to function correctly, discussed further below.
 
-    Interface: Metdata and Data Tree
-    --------------------------------
+    Interface: Metdata and Data
+    ---------------------------
     Metadata is found at
 
         >>> node.metadata
@@ -28,15 +28,42 @@ class Node:
 
         >>> node.metadata = Metadata(name='new_metadata', data={'item':1})
 
-    which adds the new instance to the dictionary.
-    The node may have data depending on its subclass (Array, Pointlist, etc).
-    The
+    which adds the new instance to the dictionary. See the Metadata docstring
+    for additional information.  The node may have data depending on its subclass
+    (Array, Pointlist, etc).
+
+    Interface: EMD Trees
+    --------------------
+    Nodes may be nested to form EMD trees, each of which must begin with a Root
+    type node.
+
+        >>> root = Root()
+        >>> node1 = Node('node1')
+        >>> root.tree(node1)
+
+    creates the data tree
+
+        root
+          |---node1
+
+    and
+
+        >>> ...
+        >>> node2 = Node('node2')
+        >>> node2.tree(node1)
+
+    extends the tree to
+
+        root
+          |---node1
+                |---node2
+
+    Each node may contain its own data and metada. The
 
         >>> node.tree
 
-    method interfaces with upstream and downstream nodes in the same EMD tree,
-    including displaying the tree, fetching another node, cutting a branch of
-    the tree off to create a new tree, or grafting to/from another tree or
+    method enables displaying the tree, fetching another node, cutting a branch
+    of the tree off to create a new tree, or grafting to/from another tree or
     subtree.  Usage includes
 
         >>> node.tree()                # show the tree downstream of this node
@@ -63,7 +90,7 @@ class Node:
         >>> node.graft
 
     methods.  See their docstrings for more info.
-    The node root is found at
+    The node root can be returned with
 
         >>> node.root
 
@@ -511,7 +538,9 @@ class Node:
         }
 
     def _populate_instance(self,group):
-        """ Nothing to add for Nodes
+        """
+        Run while reading an object from file after initial instantiation.
+        Nothing to add for Nodes
         """
         pass
 
