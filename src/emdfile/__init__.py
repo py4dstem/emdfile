@@ -39,13 +39,8 @@ from emdfile.utils import
     _read_metadata
 )
 
-# version
-from emdfile.version import __version__
-
-# n-dimensional progress bar
-from emdfile.tqdmnd import tqdmnd
-
-# test paths
+from emdfile.version import __version__ # version
+from emdfile.tqdmnd import tqdmnd       # n-dimensional progress bar
 from os.path import dirname,join
-_TESTPATH = join(join(dirname(__file__), "../.."), "test/unit_test_data")
+_TESTPATH = join(join(dirname(__file__), "../.."), "test/unit_test_data") # test paths
 

@@ -11,7 +11,6 @@ from emdfile.utils import (_is_EMD_file, _get_EMD_rootgroups, _write_header,
     _write_from_root, _write_single_node, _write_tree, _append_root_metadata,
     _validate_treepath, _overwrite_single_node, _append_branch)
 
-
 def write(
     filepath,
     data,
@@ -197,7 +196,6 @@ def write(
                 mode = 'ao'
             )
         return
-
 
     # `data` should now be a Node!
     assert(isinstance(data,Node)), f"invalid type {type(data)} found for `data`"

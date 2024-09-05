@@ -50,8 +50,7 @@ def read(
             return ans
         except:
             raise Exception(f"The file at '{filepath}' is not recognized as an EMD file!")
-
-    # get/check version
+    # get the version
     v = _get_EMD_version(filepath)
 
     # determine `emdpath` if it was left as None
@@ -93,7 +92,6 @@ def read(
                 return root
 
         # Read...
-
         # ...if the whole tree was requested
         if nodegroup is rootgroup and tree in (True,'branch'):
             # build the tree
@@ -111,14 +109,12 @@ def read(
             else:
                 # ...otherwise, return the root
                 node = root
-
         # ...if a single node was requested
         elif tree is False:
             # read the node
             node = _read_single_node(nodegroup)
             # build the tree and return
             root.force_add_to_tree(node)
-
         # ...if a branch was requested
         elif tree is True:
             # read source node and add to tree
@@ -126,22 +122,18 @@ def read(
             root.force_add_to_tree(node)
             # build the tree
             _populate_tree(node,nodegroup)
-
         # ...if `tree == None`
         elif tree is None or tree=='branch':
             # build the tree
             _populate_tree(root,nodegroup)
             node = root
-
         else:
             raise Exception(f"Invalid argument for `tree` {tree}; must be True, False, or None")
 
     # Return
     return node
 
-
 # Print the HDF5 filetree to screen
-
 def print_h5_tree(filepath, show_metadata=False):
     """
     Prints the contents of an h5 file from a filepath.
