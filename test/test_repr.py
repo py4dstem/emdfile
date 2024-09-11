@@ -73,4 +73,3 @@ def test_array_repr():
     print(ar7)
     print(ar8)
 
-

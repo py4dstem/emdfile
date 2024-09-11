@@ -14,7 +14,7 @@ def read(
     **legacy_options,
     ):
     """
-    File reader for EMD 1.0+ files.
+    File reader for EMD (Berkeley) files.
 
     Parameters
     ----------
