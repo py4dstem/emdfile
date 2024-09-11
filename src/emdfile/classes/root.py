@@ -9,12 +9,19 @@ class Root(Node):
     if no root is present. Node's with roots are protected: they can't be removed
     or added to another tree unless a graft, cut, or force_add operation is used.
 
-    Write operations include root metadata with any other data written from its
-    tree, even if only a subset of the tree is written. Root data may be
-    included, excluded, or copied to the new root when cutting a branch from a
-    tree. Similarly when grafting, metadata from the incoming branch's root can be
-    added, excluded, or copied into the recieving root's metadata. Conflicting
-    metadata collections may be skipped or overwritten.
+    Root metadata is handled uniquely. Write operations include root metadata
+    with any other data written from a tree, even if only a subset of the tree is
+    written. When cutting a branch from a tree, the branch is removed and placed
+    in a new root, thereby creating a new tree; the old root metadata may be
+    included, excluded, or copied to the new root. Inclusion means the new root
+    will contain pointers to the same metadata collections; copying means new
+    collections with the same information will be generated and stored in the
+    new root. When grafting a branch from one tree to another, metadata from the
+    incoming branch's root can be included, excluded, or copied into the
+    recieving root's metadata. Conflicting metadata collections may be skipped or
+    overwritten. Conflicts are evaluated at the level of Metadata objects, which
+    represent named collections of metadata, and are not evaluated at the level
+    of individual items of metadata.
     """
     _emd_group_type = 'root'
     def __init__(self,name='root'):
