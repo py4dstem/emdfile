@@ -172,12 +172,9 @@ class PointListArray(Node):
     # write
     def to_h5(self,group):
         """
-        Creates a subgroup in `group` and writes this node into that group,
-        including the group tags (emd_group_type, python_class), and the
-        node's metadata.
-
-        Additionally writes PointListArray data including the data itself,
-        the array shape, and the data dtype.
+        Calls Node.to_h5 to greate the group's node and write its metadata.
+        Then writes PointListArray data including the data itself, array shape
+        and the dtype.
 
         Parameters
         ----------

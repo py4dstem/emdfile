@@ -75,10 +75,12 @@ class Node:
         >>> node.tree(cut=True)        # remove & return a branch; include root metadata
         >>> node.tree(cut=False)       # discard root metadata
         >>> node.tree(cut='copy')      # copy root metadata
-        >>> node.tree(graft=node)      # remove & graft a branch; include root metadata
+        >>> node.tree(graft=node)      # remove & graft a branch; add new root metadata
         >>> node.tree(graft=(node,True))    # as above
         >>> node.tree(graft=(node,False))   # discard root metadata
-        >>> node.tree(graft=(node,'copy'))  # copy root metadata
+        >>> node.tree(graft=(node,'copy'))  # copy new root metadata
+        >>> node.tree(graft=(node,'overwrite'))  # add root metadata, overwrite conflicts
+        >>> node.tree(graft=(node,'copyover'))  # copy root metadata, overwrite conflicts
 
     Showing the tree, retrieving or adding nodes, and cutting or grafting
     branches are also possible using the
@@ -304,11 +306,11 @@ class Node:
         node : Node
         merge_metadata : True, False, 'copy', or 'overwrite'
             Specifies how root metadata should be treated.  If True, adds the
-            scion (incoming) root metadata to the stock (receiving) root,
-            skipping entries that exist in both.  If False, adds no metadata.
-            If "overwrite", entries existing in both scion and stock root
-            metadata are overwritten.  If "copy", scion root metadata are
-            copied to the stock root.
+            incoming root metadata to the receiving root, skipping entries that
+            exist in both.  If False, adds no metadata. If "overwrite", entries
+            existing in both scion and stock root metadata are overwritten.  If
+            "copy", scion root metadata are copied to the stock root, passing
+            conflicts. If "copyover", copies overwrite originals in conflicts.
 
         Returns
         -------
@@ -344,23 +346,28 @@ class Node:
                 del(upstream_node._branch[k])
 
         # add old root metadata to this node
-        assert(merge_metadata in [True,False,'copy','overwrite'])
+        assert(merge_metadata in [True,False,'copy','overwrite','copyover',])
+        # no root metadata
         if merge_metadata is False:
-            # add no root metadata
             pass
+        # add, don't overwrite
         elif merge_metadata is True:
-            # add old root metadata to new root
             for key in old_root.metadata.keys():
                 if key not in node.root.metadata.keys():
                     node.root.metadata = old_root.metadata[key]
-        elif merge_metadata == "overwrite":
-            # add old root metadata to new root
+        # add, overwrite
+        elif merge_metadata == 'overwrite':
             for key in old_root.metadata.keys():
                 node.root.metadata = old_root.metadata[key]
-        else:
-            # add copies of old root metadata to new root
+        # copy, don't overwrite
+        elif merge_metadata == 'copy':
             for key in old_root.metadata.keys():
                 node.root.metadata = old_root.metadata[key].copy()
+        # copy, overwrite
+        elif merge_metadata == 'copyover':
+            for key in old_root.metadata.keys():
+                if key not in node.root.metadata.keys():
+                    node.root.metadata = old_root.metadata[key].copy()
         # return
         return node.root
 
@@ -429,10 +436,11 @@ class Node:
             >>> node.tree(cut=True)        # remove & return a branch; include root metadata
             >>> node.tree(cut=False)       # discard root metadata
             >>> node.tree(cut='copy')      # copy root metadata
-            >>> node.tree(graft=node)      # remove & graft a branch; include root metadata
-            >>> node.tree(graft=(node,True))    # as above
+            >>> node.tree(graft=node)      # remove & graft a branch; add new root metadata
             >>> node.tree(graft=(node,False))   # discard root metadata
-            >>> node.tree(graft=(node,'copy'))  # copy root metadata
+            >>> node.tree(graft=(node,'copy'))  # copy new root metadata
+            >>> node.tree(graft=(node,'overwrite'))  # add root metadata, overwrite conflicts
+            >>> node.tree(graft=(node,'copyover'))  # copy root metadata, overwrite conflicts
         """
         # if `arg` is passed, choose behavior from its type
         if isinstance(arg,bool):

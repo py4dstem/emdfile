@@ -105,12 +105,9 @@ class Custom(Node):
     # write
     def to_h5(self,group):
         """
-        Creates a subgroup in `group` and writes this node into that group,
-        including the group tags (emd_group_type, python_class), and the
-        node's metadata.
-
-        Additionally, for every attribute which yields a Node instance,
-        writes that node to a new child group using it's class .to_h5 method.
+        Calls Node.to_h5 to greate the group's node and write its metadata.
+        Then writes every attribute yielding a Node instance using that
+        node's .to_h5 method.
 
         Parameters
         ----------

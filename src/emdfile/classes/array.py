@@ -502,13 +502,9 @@ class Array(Node):
     # write
     def to_h5(self,group):
         """
-        Creates a subgroup in `group` and writes this node into that group,
-        including the group tags (emd_group_type, python_class), and the
-        node's metadata.
-
-        Additionally writes Array data including the array itself, the
-        calibration dimension vectors, units, and if the array is a stack-array,
-        the slice labels.
+        Calls Node.to_h5 to greate the group's node and write its metadata.
+        Then writes Array data, calibration vectors, units, and any stack/label
+        info.
 
         Parameters
         ----------
