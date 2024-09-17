@@ -1,22 +1,22 @@
-from emdfile import Metadata, save, read, _TESTPATH
-from os.path import join, exists
-from os import remove
+from emdfile import Metadata, Node, save, read
 import numpy as np
-
-# Set path
-path = join(_TESTPATH, 'test_metadata.h5')
+from pathlib import Path
+import tempfile
+import pytest
 
 
 class TestMetadata:
 
-    def setup_method(self):
-        """
-        Make a simple and a nested Metadata instance.
-        Clear filepaths.
-        """
-        self._clear_data()
-        self.x = Metadata()
+    @pytest.fixture
+    def _tempfile(self):
+        """Create an empty temporary file and return as a Path."""
+        tf = tempfile.NamedTemporaryFile(mode='wb')
+        tf.close()  # need to close the file to use it later
+        return Path(tf.name)
 
+    @pytest.fixture
+    def metadata1(self):
+        """Make a non-nested Metadata instance."""
         m = Metadata( name='test_metadata' )
         m['x'] = 10
         m['y'] = True
@@ -24,8 +24,11 @@ class TestMetadata:
         m['a'] = (1,2,3)
         m['b'] = np.ones((4,5),dtype='uint16')
         m['c'] = (np.ones(5,dtype=bool), np.ones(6,dtype=np.float32))
-        self.m = m
+        return m
 
+    @pytest.fixture
+    def metadata2(self):
+        """Make a nested Metadata instance."""
         n = Metadata( name='test_nested_metadata' )
         n['x'] = 10
         n['y'] = {'arg':1,'barg':(1,2,3),'targ':None}
@@ -33,34 +36,19 @@ class TestMetadata:
         n['z']['a'] = 'moop'
         n['z']['b'] = {}
         n['z']['b']['c'] = True
-        self.n = n
-        pass
+        return n
 
-    def teardown_method(self):
-        """
-        Clear filepaths.
-        """
-        self._clear_data()
-
-    def _clear_data(self):
-        if exists(path):
-            remove(path)
-            pass
 
     def test_instantiation(self):
-        assert(isinstance(self.x,Metadata))
+        m = Metadata()
+        assert(isinstance(m,Metadata))
         pass
 
-    def test_metadata_basic_io(self):
-        """
-        Make a metadata instance
-        store a piece of data
-        save, read
-        """
-        m = self.m
-        save(path, m)
-        _m = read(path)
-
+    def test_metadata1(self,metadata1,_tempfile):
+        """Test non-nested metadata"""
+        m = metadata1
+        save(_tempfile, m)
+        _m = read(_tempfile)
         assert(m['x'] == _m['x'])
         assert(m['y'] == _m['y'])
         assert(m['z'] == _m['z'])
@@ -73,32 +61,24 @@ class TestMetadata:
         assert(m['c'][1].dtype == _m['c'][1].dtype)
         pass
 
-
-    def test_metadata_nested_io(self):
-        """
-        Make a metadata instance
-        store some nested metadata
-        save, read
-        """
-        n = self.n
-        save(path, n)
-        _n = read(path)
-
+    def test_metadata2(self,metadata2,_tempfile):
+        """Test nested metadata"""
+        n = metadata2
+        save(_tempfile, n)
+        _n = read(_tempfile)
         assert(n['x'] == _n['x'])
         assert(n['y'] == _n['y'])
         assert(n['z'] == _n['z'])
         pass
 
-    def test_empty_lists_and_tups(self):
-        """
-        """
+    def test_empty_lists_and_tups(self,_tempfile):
+        """Test empty lists & tuples """
         m = Metadata( name='metadata' )
         m['x'] = ()
         m['y'] = []
-        save(path, m)
-        n = read(path)
+        save(_tempfile, m)
+        n = read(_tempfile)
         assert(n['x'] == ())
         assert(n['y'] == [])
-
 
 

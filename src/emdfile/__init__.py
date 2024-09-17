@@ -31,7 +31,7 @@ def set_program(program):
 from emdfile.read import read,print_h5_tree
 from emdfile.read import print_h5_tree as printtree
 from emdfile.write import write as save
-from emdfile.utils import
+from emdfile.utils import (
     _is_EMD_file,
     _get_EMD_version,
     _version_is_geq,

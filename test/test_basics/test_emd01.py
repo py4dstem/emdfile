@@ -1,7 +1,5 @@
 """
 Tests for the emd version 0.1 reader.
-
-For pytest
 """
 
 import pytest
@@ -10,19 +8,9 @@ import tempfile
 import numpy as np
 from numpy import array_equal
 import h5py
-
 from emdfile.read_EMD_v0p1 import read_EMD_v0p1, emd_v0p1
-from emdfile import _TESTPATH
-from emdfile import save,read
-from emdfile.read import _is_EMD_file,_get_EMD_rootgroups
-from emdfile.classes import (
-    Node,
-    Root,
-    Metadata,
-    Array,
-    PointList,
-    PointListArray
-)
+from emdfile import save,read,_TESTPATH,Root,Array
+from emdfile.utils import _is_EMD_file,_get_EMD_rootgroups
 
 class TestEMD01:
 
@@ -35,10 +23,9 @@ class TestEMD01:
 
         @pytest.fixture
         def _make_data(self, _temp_file):
-            """Create a v0.1 (or 0.2?) version EMD using a temporary file. Returns a Path
+            """Create a v0.1 version EMD using a temporary file. Returns a Path
             to the file.
             """
-
             data, _ = np.mgrid[0:100, 0:100]
 
             with h5py.File(_temp_file, 'w') as f0:
@@ -62,7 +49,7 @@ class TestEMD01:
 
         @pytest.fixture
         def _make_data_2(self, _temp_file):
-            """Create a v0.1 (or 0.2?) version EMD using a temporary file. This emd file
+            """Create a v0.2 version EMD using a temporary file. This emd file
             contains two emd groups. Returns a Path to the file.
             """
 

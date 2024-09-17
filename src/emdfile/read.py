@@ -4,8 +4,15 @@ import h5py
 import pathlib
 from os.path import exists, join
 from typing import Union, Optional
-from emdfile.classes import Root
+from emdfile import Root
 from emdfile.read_EMD_v0p1 import read_EMD_v0p1
+from emdfile.utils import (
+    _is_EMD_file,
+    _get_EMD_version,
+    _get_EMD_rootgroups,
+    _populate_tree,
+    _read_single_node,
+)
 
 def read(
     filepath,

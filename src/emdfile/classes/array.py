@@ -238,7 +238,7 @@ class Array(Node):
         else:
             assert(isinstance(dim_units,(list,tuple))), f"dim_units must be None or a list or tuple, not type {type(dim_units)}"
             if len(dim_units) < (self.rank):
-                dim_units = list(dim_units) + ['unknown' for i in range(rank-len(dim_units))]
+                dim_units = list(dim_units) + ['unknown' for i in range(self.rank-len(dim_units))]
             else:
                 dim_units = dim_units[:self.rank]
         dim_units = np.array(dim_units)
@@ -250,7 +250,7 @@ class Array(Node):
         else:
             assert(isinstance(dim_names,(list,tuple))), f"dim_names must be None or a list or tuple, not type {type(dim_names)}"
             if len(dim_names) < (self.rank):
-                dim_names = list(dim_names) + [f"dim{i+len(dim_names)}" for i in range(rank-len(dim_names))]
+                dim_names = list(dim_names) + [f"dim{i+len(dim_names)}" for i in range(self.rank-len(dim_names))]
             else:
                 dim_names = dim_names[:self.rank]
         # set the dims

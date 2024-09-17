@@ -128,7 +128,7 @@ class Node:
     begin
 
         >>> def to_h5(self, group):
-        >>>     """ describe the data being included """
+        >>>     '''describe the data being included '''
         >>>     grp = ParentClass.to_h5(self, group)
         >>>     ...
 
@@ -416,6 +416,7 @@ class Node:
         -------
         (Node) the new root node
         """
+        from emdfile import Root
         new_root = Root( name=self.root.name+'_cut_'+self.name)
         return self._graft(new_root,merge_metadata=root_metadata)
 

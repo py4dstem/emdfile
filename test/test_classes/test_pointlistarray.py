@@ -1,28 +1,20 @@
 from emdfile import PointListArray
-#from os.path import join,exists
-#from emdfile import _TESTPATH
-#from emdfile import save, read
 import numpy as np
-
-# Set paths
-#dirpath = _TESTPATH
-#testpath = join(dirpath,"test_base_classes.h5")
+import pytest
 
 class TestPointListArray():
 
-    def setup_method(self):
-        """ instantiate a PointList
-        """
+    @pytest.fixture
+    def pla(self):
+        """Make a PointListArray"""
         dtype = [('x',np.int32),('y',np.float32)]
-
         pla = PointListArray(
-            dtype = dtype),
-            shape = (5,5)
+            dtype = dtype,
+            shape = (5,5),
         )
-        self.x = pla
-        pass
+        return pla
 
-    def test_instantiation(self):
-        assert(isinstance(self.x,PointListArray))
+    def test_pointlistarray(self,pla):
+        assert(isinstance(pla,PointListArray))
         pass
 

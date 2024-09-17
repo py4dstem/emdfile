@@ -1,12 +1,11 @@
-import numpy as np
-from os.path import join,exists
-from os import remove
-from numpy import array_equal
-import h5py
-
-from emdfile import _TESTPATH
 from emdfile import save,read,set_author
-from emdfile.read import _is_EMD_file,_get_EMD_rootgroups
+import numpy as np
+import pytest
+import tempfile
+from pathlib import Path
+
+import h5py
+from emdfile.utils import _is_EMD_file,_get_EMD_rootgroups
 from emdfile.classes import (
     Node,
     Root,
@@ -16,72 +15,31 @@ from emdfile.classes import (
     PointListArray
 )
 
-# Set paths
-dirpath = _TESTPATH
-path_h5 = join(dirpath,"test.h5")
-
 
 
 
 
 class TestHeader:
 
-    ## Setup and teardown
+    @pytest.fixture
+    def array(self):
+        """Make an array"""
+        return Array(
+            data = np.arange(np.prod((2,3))).reshape((2,3)))
 
-    @classmethod
-    def setup_class(cls):
-        cls._clear_files(cls)
-        cls._make_data(cls)
+    @pytest.fixture
+    def testpath(self):
+        """Create an empty temporary file and return as a Path."""
+        tf = tempfile.NamedTemporaryFile(mode='wb')
+        tf.close()  # need to close the file to use it later
+        return Path(tf.name)
 
-    @classmethod
-    def teardown_class(cls):
-        pass
-
-    def setup_method(self, method):
-        pass
-
-    def teardown_method(self, method):
-        self._clear_files()
-
-    def _make_data(self):
-        """ Make
-            - an array
-            - an array with some 'slicelabels'
-            #- a pointlist
-            #- a pointlistarray
-        """
-        # arrays
-        self.array = Array(
-            data = np.arange(np.prod((2,3))).reshape((2,3))
-        )
-
-
-
-    def _clear_files(self):
-        """
-        Delete h5 files which this test suite wrote
-        """
-        paths = [
-            path_h5
-        ]
-        for p in paths:
-            if exists(p):
-                remove(p)
-
-
-
-
-
-    ## Tests
-
-    def test_header(self):
-        """ Save a file, and check its header tags
-        """
+    def test_header(self,array,testpath):
+        """Save a file and check its header tags"""
         # save
-        save(path_h5,self.array)
-
+        save(testpath,array)
         # check tags
-        with h5py.File(path_h5,'r') as f:
+        with h5py.File(testpath,'r') as f:
             for key in (
                 'emd_group_type',
                 'version_major',
@@ -91,7 +49,6 @@ class TestHeader:
                 'UUID'
             ):
                 assert( key in f.attrs )
-
             assert( f.attrs['emd_group_type'] == 'file' )
             assert( f.attrs['version_major'] == 1 )
             assert( f.attrs['version_minor'] == 0 )
@@ -100,20 +57,15 @@ class TestHeader:
             uuid = f.attrs['UUID']
             assert(isinstance(uuid,str))
 
-
-
-    def test_header2(self):
+    def test_header2(self,array,testpath):
         """ Save a file after modifying the authoring user, then
         check its header tags
         """
         set_author('emdfile_test_suite')
-
-
         # save
-        save(path_h5,self.array)
-
+        save(testpath,array)
         # check tags
-        with h5py.File(path_h5,'r') as f:
+        with h5py.File(testpath,'r') as f:
             for key in (
                 'emd_group_type',
                 'version_major',

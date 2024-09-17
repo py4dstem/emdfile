@@ -1,92 +1,80 @@
-from emdfile import PointList
-from os.path import join,exists
-from emdfile import _TESTPATH
-from emdfile import save, read
+from emdfile import PointList, save, read
 import numpy as np
+from pathlib import Path
+import tempfile
+import pytest
 
-# Set paths
-dirpath = _TESTPATH
-testpath = join(dirpath,"test_base_classes.h5")
 
 class TestPointList():
 
-    def setup_method(self):
-        """ instantiate a PointList
-        """
-        dtype = [('x',np.int32),('y',np.float32)]
+    @pytest.fixture
+    def testpath(self):
+        """Create an empty temporary file and return as a Path."""
+        tf = tempfile.NamedTemporaryFile(mode='wb')
+        tf.close()  # need to close the file to use it later
+        return Path(tf.name)
 
-        pl = PointList(
-            data = np.zeros(5,dtype=dtype)
-        )
+    @pytest.fixture
+    def pointlist(self):
+        """Make a PointList"""
+        dtype = [('x',np.int32),('y',np.float32)]
+        pl = PointList(data = np.zeros(5,dtype=dtype))
         pl['x'][:] = np.arange(5)
-        self.x = pl
-        pass
+        return pl
 
     def test_instantiation(self):
-        assert isinstance(self.x, PointList)
+        dtype = [('x',np.int32),('y',np.float32)]
+        pl = PointList(data = np.zeros(5,dtype=dtype))
+        pl['x'][:] = np.arange(5)
+        assert isinstance(pl, PointList)
         pass
 
-    def test_PointList_readwrite(self):
-
+    def test_pointList(self,pointlist,testpath):
         # save, read, check
-        save(testpath,self.x,mode='o')
+        save(testpath,pointlist)
         pl2 = read(testpath)
-        assert(np.array_equal(pl2.data,self.x.data))
+        assert(np.array_equal(pl2.data,pointlist.data))
 
-    def test_PointList_addition(self):
-
+    def test_PointList_addition(self,pointlist,testpath):
         # make a structured array of the same dtype
-        dtype = self.x.dtype
+        dtype = pointlist.dtype
         new_data = np.ones(3,dtype=dtype)
-
         # add, resulting in a new pointlist
         # length should be len(old)+len(new)
-        new_pointlist = self.x + new_data
+        new_pointlist = pointlist + new_data
         assert(len(new_pointlist) == 8)
-
         # the old pointlist should be unmodified
-        assert(len(self.x) == 5)
-
+        assert(len(pointlist) == 5)
         # alternatively if we call the .add method,
         # the old pointlist is modified
-        self.x.add(new_data)
-        assert(len(self.x) == 8)
-
+        pointlist.add(new_data)
+        assert(len(pointlist) == 8)
         # or if we perform a new assignment, the old
         # pointlist is modified
-        self.x += new_pointlist
-        assert(len(self.x) == 16)
-
+        pointlist += new_pointlist
+        assert(len(pointlist) == 16)
 
     def test_simple_vector_PointList(self):
-
         # make a PointList with a *non*-structured array
         pl = PointList(
             name = 'test_simple_pointlist',
-            data = np.arange(5).astype(np.float32)
-        )
-
+            data = np.arange(5).astype(np.float32))
         # type check
         assert(isinstance(pl,PointList))
         assert(pl.fields == ('',))
         assert(pl._types == (np.float32,))
-
         # make data to add
         new_data = np.arange(5,8).astype(np.float32)
-
         # add, resulting in a new pointlist
         # length should be len(old)+len(new)
         new_pointlist = pl + new_data
         assert(len(new_pointlist) == 8)
-
         # the old pointlist should be unmodified
         assert(len(pl) == 5)
-
         # alternatively if we call the .add method,
         # the old pointlist is modified
         pl.add(new_data)
         assert(len(pl) == 8)
-
         # or if we perform a new assignment, the old
         # pointlist is modified
         pl += new_pointlist

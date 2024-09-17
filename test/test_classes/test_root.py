@@ -1,20 +1,13 @@
 from emdfile import Root
-#from os.path import join,exists
-#from emdfile import _TESTPATH
-#from emdfile import save, read
-#import numpy as np
-
-# Set paths
-#dirpath = _TESTPATH
-#testpath = join(dirpath,"test_base_classes.h5")
-
+import pytest
 
 class TestRoot:
 
-    def setup_method(self):
-        self.x = Root()
+    @pytest.fixture
+    def root(self):
+        return Root(name='test_root')
 
-    def test_instantiation(self):
-        assert(isinstance(self.x,Root))
+    def test_instantiation(self,root):
+        assert(isinstance(root,Root))
         pass
 
