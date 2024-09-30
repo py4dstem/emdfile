@@ -1,4 +1,4 @@
-from emdfile import save,read,set_author
+from emdfile import save,read,set_author,set_program
 import numpy as np
 import pytest
 import tempfile
@@ -14,9 +14,6 @@ from emdfile.classes import (
     PointList,
     PointListArray
 )
-
-
-
 
 
 class TestHeader:
@@ -62,6 +59,7 @@ class TestHeader:
         check its header tags
         """
         set_author('emdfile_test_suite')
+        set_program('emdfile_test_suite')
         # save
         save(testpath,array)
         # check tags
@@ -79,7 +77,7 @@ class TestHeader:
             assert( f.attrs['emd_group_type'] == 'file' )
             assert( f.attrs['version_major'] == 1 )
             assert( f.attrs['version_minor'] == 0 )
-            assert( f.attrs['authoring_program'] == 'emdfile' )
+            assert( f.attrs['authoring_program'] == 'emdfile_test_suite' )
             assert( f.attrs['authoring_user'] == 'emdfile_test_suite' )
             uuid = f.attrs['UUID']
             assert(isinstance(uuid,str))

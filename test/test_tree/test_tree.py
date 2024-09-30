@@ -7,7 +7,6 @@ import pytest
 import tempfile
 from pathlib import Path
 
-
 class TestTree:
 
     @pytest.fixture
@@ -259,7 +258,28 @@ class TestTree:
         assert(ar._treepath == '/array')
         # confirm that all nodes point to the same root node
         assert(t2.root == ar.root == t2.tree('pointlist3').root)
-
+        # check all data is the same
+        assert(self.pointlist_equal(
+            t2.tree('pointlist3'),tree.tree('pointlist3')))
+        assert(self.pointlist_equal(
+            t2.tree('pointlist3/pointlist4'),
+            tree.tree('pointlist3/pointlist4')))
+        assert(np.array_equal(
+            t2.tree('array').data,tree.tree('array').data))
+        pla1 = tree.tree('array/pointlistarray')
+        pla2 = t2.tree('array/pointlistarray')
+        assert(pla1.shape == pla2.shape)
+        for x in range(pla1.shape[0]):
+            for y in range(pla1.shape[1]):
+                assert(self.pointlist_equal(
+                    pla1[x,y],pla2[x,y]))
+        # confirm objects are not the same
+        assert(t2.tree('pointlist3') is not tree.tree('pointlist3'))
+        assert(t2.tree('pointlist3/pointlist4') is not
+            tree.tree('pointlist3/pointlist4'))
+        assert(t2.tree('array').data is not tree.tree('array').data)
+        assert(pla1 is not pla2)
+        pass
 
     # Cut
 
@@ -457,420 +477,31 @@ class TestTree:
         assert(isinstance(t,Array))
         assert(isinstance(t.root,Root))
         assert(t.root.name=='unrooted_array_root')
+        pass
 
-
-
-#    def test_whole_tree_io(self):
-#        """ Should contain the full data tree:
-#
-#            Root                  'root'
-#              |-Metadata          'metadata_root'
-#              |-Metadata          'metadata_root'
-#              |-PointList         'pointlist3'
-#              | |-PointList       'pointlist4'
-#              |   |-Metadata      'metadata3'
-#              |-Array             'array
-#                |-Metadata        'metadata'
-#                |-Metadata        'metadata2'
-#                |-PointListArray  'pointlistarray'
-#                  |-PointList     'pointlist'
-#                  |-PointList     'pointlist2'
-#        """
-#        # Load data
-#        loaded_data = read(
-#            whole_tree_path
-#        )
-#
-#        # Does the tree look as it should?
-#        assert(isinstance(loaded_data,Root))
-#        assert(loaded_data.name == 'root')
-#
-#        lmd_root = loaded_data.metadata['metadata_root']
-#        lmd_root2 = loaded_data.metadata['metadata_root2']
-#        lpl3 = loaded_data.tree('/pointlist3')
-#        lpl4 = loaded_data.tree('pointlist3/pointlist4')
-#        lmd3 = lpl4.metadata['metadata3']
-#        lar = loaded_data.tree('array')
-#        lmd = lar.metadata['metadata']
-#        lmd2 = lar.metadata['metadata2']
-#        lpla = loaded_data.tree('array/pointlistarray')
-#        lpl = loaded_data.tree('array/pointlistarray/pointlist')
-#        lpl2 = loaded_data.tree('array/pointlistarray/pointlist2')
-#
-#        # Check types
-#        assert(isinstance(lmd_root,Metadata))
-#        assert(isinstance(lmd_root2,Metadata))
-#        assert(isinstance(lpl3,PointList))
-#        assert(isinstance(lpl4,PointList))
-#        assert(isinstance(lmd3,Metadata))
-#        assert(isinstance(lar,Array))
-#        assert(isinstance(lmd,Metadata))
-#        assert(isinstance(lmd2,Metadata))
-#        assert(isinstance(lpla,PointListArray))
-#        assert(isinstance(lpl,PointList))
-#        assert(isinstance(lpl2,PointList))
-#
-#        # New objects are distinct from old objects
-#        assert(lmd_root is not self.md_root)
-#        assert(lmd_root2 is not self.md_root2)
-#        assert(lpl3 is not self.pl3)
-#        assert(lpl4 is not self.pl4)
-#        assert(lmd3 is not self.md3)
-#        assert(lar is not self.ar)
-#        assert(lmd is not self.md)
-#        assert(lmd2 is not self.md2)
-#        assert(lpla is not self.pla)
-#        assert(lpl is not self.pl)
-#        assert(lpl2 is not self.pl2)
-#
-#        # New objects carry identical data to old objects
-#        assert(lmd_root._params == self.md_root._params)
-#        assert(lmd_root2._params == self.md_root2._params)
-#        assert(self.pointlist_equal(lpl3, self.pl3))
-#        assert(self.pointlist_equal(lpl4, self.pl4))
-#        assert(lmd3._params == self.md3._params)
-#        assert(array_equal(lar.data, self.ar.data))
-#        assert(lmd._params == self.md._params)
-#        assert(lmd2._params == self.md2._params)
-#        assert(self.pointlist_equal(lpl, self.pl))
-#        assert(self.pointlist_equal(lpl2, self.pl2))
-#        for x in range(lpla.shape[0]):
-#            for y in range(lpla.shape[1]):
-#                assert(self.pointlist_equal(lpla[x,y], self.pla[x,y]))
-#
-#        pass
-#
-#
-#    def test_whole_tree_io_treeIsFalse(self):
-#        """ Should contain only:
-#
-#            Root                  'root'
-#              |-PointListArray    'pointlistarray'
-#        """
-#        # Load data
-#        loaded_data = read(
-#            whole_tree_path,
-#            emdpath = '/root/array/pointlistarray',
-#            tree = False
-#        )
-#
-#        # Does the tree look as it should?
-#        assert(isinstance(loaded_data,PointListArray))
-#        assert(loaded_data.name == 'pointlistarray')
-#
-#        lmd_root = loaded_data.root.metadata['metadata_root']
-#        lmd_root2 = loaded_data.root.metadata['metadata_root2']
-#
-#        # Check types
-#        assert(isinstance(lmd_root,Metadata))
-#        assert(isinstance(lmd_root2,Metadata))
-#
-#        # New objects are distinct from old objects
-#        assert(lmd_root is not self.md_root)
-#        assert(lmd_root2 is not self.md_root2)
-#        assert(loaded_data is not self.pla)
-#
-#        # New objects carry identical data to old objects
-#        assert(lmd_root._params == self.md_root._params)
-#        assert(lmd_root2._params == self.md_root2._params)
-#        for x in range(loaded_data.shape[0]):
-#            for y in range(loaded_data.shape[1]):
-#                assert(self.pointlist_equal(loaded_data[x,y], self.pla[x,y]))
-#
-#        pass
-#
-#
-#    def test_subtree_io(self):
-#        """ Tree should be root/pointlist3/pointlist4, plus
-#        metadata at root and pl4
-#        """
-#        # Load data
-#        loaded_data = read(
-#            subtree_path
-#        )
-#
-#        # Does the tree look as it should?
-#        assert(isinstance(loaded_data,PointList))
-#        assert(loaded_data.name == 'pointlist3')
-#
-#        lmd_root = loaded_data.root.metadata['metadata_root']
-#        lmd_root2 = loaded_data.root.metadata['metadata_root2']
-#        lpl3 = loaded_data
-#        lpl4 = loaded_data.tree('pointlist4')
-#        lmd3 = lpl4.metadata['metadata3']
-#
-#        # Check types
-#        assert(isinstance(lmd_root,Metadata))
-#        assert(isinstance(lmd_root2,Metadata))
-#        assert(isinstance(lpl3,PointList))
-#        assert(isinstance(lpl4,PointList))
-#        assert(isinstance(lmd3,Metadata))
-#
-#        # New objects are distinct from old objects
-#        assert(lmd_root is not self.md_root)
-#        assert(lmd_root2 is not self.md_root2)
-#        assert(lpl3 is not self.pl3)
-#        assert(lpl4 is not self.pl4)
-#        assert(lmd3 is not self.md3)
-#
-#        # New objects carry identical data to old objects
-#        assert(lmd_root._params == self.md_root._params)
-#        assert(lmd_root2._params == self.md_root2._params)
-#        assert(self.pointlist_equal(lpl3, self.pl3))
-#        assert(self.pointlist_equal(lpl4, self.pl4))
-#        assert(lmd3._params == self.md3._params)
-#
-#        pass
-#
-#
-#
-#    def test_subtree_noroot_io(self):
-#        """ Tree should be root/pointlist4, plus
-#        metadata at root and pl4
-#        """
-#        # Load data
-#        loaded_data = read(
-#            subtree_noroot_path
-#        )
-#
-#        # Does the tree look as it should?
-#        assert(isinstance(loaded_data,PointList))
-#        assert(loaded_data.name == 'pointlist4')
-#
-#        lmd_root = loaded_data.root.metadata['metadata_root']
-#        lmd_root2 = loaded_data.root.metadata['metadata_root2']
-#        lpl4 = loaded_data
-#        lmd3 = lpl4.metadata['metadata3']
-#
-#        # Check types
-#        assert(isinstance(lmd_root,Metadata))
-#        assert(isinstance(lmd_root2,Metadata))
-#        assert(isinstance(lmd3,Metadata))
-#
-#        # New objects are distinct from old objects
-#        assert(lmd_root is not self.md_root)
-#        assert(lmd_root2 is not self.md_root2)
-#        assert(lpl4 is not self.pl4)
-#        assert(lmd3 is not self.md3)
-#
-#        # New objects carry identical data to old objects
-#        assert(lmd_root._params == self.md_root._params)
-#        assert(lmd_root2._params == self.md_root2._params)
-#        assert(self.pointlist_equal(lpl4, self.pl4))
-#        assert(lmd3._params == self.md3._params)
-#
-#        pass
-#
-#
-#    def test_append_to_io(self):
-#        """ Tree should be
-#                root
-#                    |--array
-#                        |--pointlist5
-#        """
-#        # Load data
-#        loaded_data = read(
-#            subtree_append_to_path
-#        )
-#
-#        # Does the tree look as it should?
-#        assert(isinstance(loaded_data,Array))
-#        assert(loaded_data.name == 'array')
-#
-#        lmd_root = loaded_data.root.metadata['metadata_root']
-#        lmd_root2 = loaded_data.root.metadata['metadata_root2']
-#        lar = loaded_data
-#        lmd = lar.metadata['metadata']
-#        lmd2 = lar.metadata['metadata2']
-#        lpl5 = loaded_data.tree('pointlist5')
-#
-#        # Ensure the data that shouldn't be here, isn't
-#        assert('pointlist3' not in loaded_data.root._branch.keys())
-#        assert('array' in loaded_data.root._branch.keys())
-#
-#        # Check types
-#        assert(isinstance(lmd_root,Metadata))
-#        assert(isinstance(lmd_root2,Metadata))
-#        assert(isinstance(lar,Array))
-#        assert(isinstance(lmd,Metadata))
-#        assert(isinstance(lmd2,Metadata))
-#        assert(isinstance(lpl5,PointList))
-#
-#        # New objects are distinct from old objects
-#        assert(lmd_root is not self.md_root)
-#        assert(lmd_root2 is not self.md_root2)
-#        assert(lar is not self.ar)
-#        assert(lmd is not self.md)
-#        assert(lmd2 is not self.md2)
-#        assert(lpl5 is not self.pl5)
-#
-#        # New objects carry identical data to old objects
-#        assert(lmd_root._params == self.md_root._params)
-#        assert(lmd_root2._params == self.md_root2._params)
-#        assert(array_equal(lar.data, self.ar.data))
-#        assert(not(array_equal(lar.data, self.ar2.data))) # ensure we didn't overwrite
-#        assert(lmd._params == self.md._params)
-#        assert(lmd2._params == self.md2._params)
-#        assert(self.pointlist_equal(lpl5, self.pl5))
-#
-#        pass
-#
-#
-#    def test_append_over_io(self):
-#        """ Tree should be
-#                root
-#                    |--array
-#                        |--pointlist5
-#        where array should have no metadata and its data should
-#        be that of ar2 and not ar1
-#        """
-#        # Load data
-#        loaded_data = read(
-#            subtree_append_over_path
-#        )
-#
-#        # Does the tree look as it should?
-#        assert(isinstance(loaded_data,Array))
-#        assert(loaded_data.name == 'array')
-#
-#        lmd_root = loaded_data.root.metadata['metadata_root']
-#        lmd_root2 = loaded_data.root.metadata['metadata_root2']
-#        assert(len(loaded_data.metadata)==0)
-#        lpl5 = loaded_data.tree('pointlist5')
-#
-#        # Ensure the data that shouldn't be here, isn't
-#        assert('pointlist3' not in loaded_data.root._branch.keys())
-#        assert('array' in loaded_data.root._branch.keys())
-#
-#        # Check types
-#        assert(isinstance(lmd_root,Metadata))
-#        assert(isinstance(lmd_root2,Metadata))
-#        assert(isinstance(lpl5,PointList))
-#
-#        # New objects are distinct from old objects
-#        assert(lmd_root is not self.md_root)
-#        assert(lmd_root2 is not self.md_root2)
-#        assert(loaded_data is not self.ar2)
-#        assert(lpl5 is not self.pl5)
-#
-#        # New objects carry identical data to old objects
-#        assert(lmd_root._params == self.md_root._params)
-#        assert(lmd_root2._params == self.md_root2._params)
-#        assert(array_equal(loaded_data.data, self.ar2.data))    # ensure we did overwrite
-#        assert(not(array_equal(loaded_data.data, self.ar.data)))
-#        assert(self.pointlist_equal(lpl5, self.pl5))
-#
-#        pass
-#
-#
-#
-#
-#
-#
-#    # setup/teardown utilities
-#
-#    def _write_h5_single_node(self):
-#        """
-#        Write a single node to file
-#        """
-#        save(
-#            single_node_path,
-#            self.ar,
-#            tree = False
-#        )
-#
-#    def _write_h5_unrooted_node(self):
-#        """
-#        Write an unrooted node to file
-#        """
-#        save(
-#            unrooted_node_path,
-#            self.ar_unrooted
-#        )
-#
-#    def _write_h5_whole_tree(self):
-#        """
-#        Write the whole tree to file
-#        """
-#        save(
-#            whole_tree_path,
-#            self.root,
-#            tree = True
-#        )
-#
-#    def _write_h5_subtree(self):
-#        """
-#        Write a subtree to file
-#        """
-#        save(
-#            subtree_path,
-#            self.pl3,
-#            tree = True
-#        )
-#
-#    def _write_h5_subtree_noroot(self):
-#        """
-#        Write a subtree tree to file without it's root dataset
-#        """
-#        save(
-#            subtree_noroot_path,
-#            self.pl3,
-#            tree = None
-#        )
-#
-#    def _append_to_h5(self):
-#        """
-#        Append to an existing h5 file
-#        """
-#        save(
-#            subtree_append_to_path,
-#            self.ar,
-#            tree = False
-#        )
-#        save(
-#            subtree_append_to_path,
-#            self.ar2,
-#            tree = True,
-#            mode = 'a'
-#        )
-#        pass
-#
-#    def _append_over_h5(self):
-#        """
-#        Append to an existing h5 file, overwriting a redundantly named object
-#        """
-#        save(
-#            subtree_append_over_path,
-#            self.ar,
-#            tree = False
-#        )
-#        save(
-#            subtree_append_over_path,
-#            self.ar2.root,
-#            tree = True,
-#            mode = 'ao'
-#        )
-#        pass
-#
-#    def _clear_files(self):
-#        """
-#        Delete h5 files which this test suite wrote
-#        """
-#        paths = [
-#            single_node_path,
-#            unrooted_node_path,
-#            whole_tree_path,
-#            subtree_path,
-#            subtree_noroot_path,
-#            subtree_append_to_path,
-#            subtree_append_over_path
-#        ]
-#        for p in paths:
-#            if exists(p):
-#                remove(p)
-#
-#
-#
-#
-#
-#
+    def test_save_tree_arg_options(self,testpath,tree):
+        """Test the save `tree` argument"""
+        # `tree=False`
+        node = tree.tree('array/pointlistarray')
+        save(
+            testpath,
+            node,
+            tree = False
+        )
+        t = read(testpath)
+        assert(isinstance(node,PointListArray))
+        assert(isinstance(t,PointListArray))
+        assert('pointlist' in node.treekeys)
+        assert(not('pointlist' in t.treekeys))
+        # `tree=None`
+        save(
+            testpath,
+            node,
+            tree = None,
+            mode = 'o'
+        )
+        t = read(testpath)
+        assert(isinstance(t,Root))
+        assert('pointlist' in t.treekeys)
+        assert('pointlist2' in t.treekeys)
+        pass

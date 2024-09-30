@@ -10,5 +10,6 @@ test/unit_test_data/
 
 # Files $
 *.swp
+*.coverage*
 moop_pile.txt
 
