@@ -37,9 +37,11 @@ class Node:
     Nodes may be nested to form EMD trees, each of which must begin with a Root
     type node.
 
-        >>> root = Root()
-        >>> node1 = Node('node1')
-        >>> root.tree(node1)
+    .. code-block::
+
+        root = Root()
+        node1 = Node('node1')
+        root.tree(node1)
 
     creates the data tree
 
@@ -48,9 +50,11 @@ class Node:
 
     and
 
-        >>> ...
-        >>> node2 = Node('node2')
-        >>> node2.tree(node1)
+    .. code-block::
+
+        ...
+        node2 = Node('node2')
+        node2.tree(node1)
 
     extends the tree to
 
@@ -66,30 +70,34 @@ class Node:
     of the tree off to create a new tree, or grafting to/from another tree or
     subtree.  Usage includes
 
-        >>> node.tree()                # show the tree downstream of this node
-        >>> node.tree(show=True)       # show the full tree from the root node
-        >>> node.tree(show=False)      # show from current node
-        >>> node.tree('path/to/node')  # return the node at the chosen location
-        >>> node.tree('/path/to/node') # specifiy the location starting from root
-        >>> node.tree(node)            # add a child node; must be a Node instance
-        >>> node.tree(cut=True)        # remove & return a branch; include root metadata
-        >>> node.tree(cut=False)       # discard root metadata
-        >>> node.tree(cut='copy')      # copy root metadata
-        >>> node.tree(graft=node)      # remove & graft a branch; add new root metadata
-        >>> node.tree(graft=(node,True))    # as above
-        >>> node.tree(graft=(node,False))   # discard root metadata
-        >>> node.tree(graft=(node,'copy'))  # copy new root metadata
-        >>> node.tree(graft=(node,'overwrite'))  # add root metadata, overwrite conflicts
-        >>> node.tree(graft=(node,'copyover'))  # copy root metadata, overwrite conflicts
+    .. code-block::
+
+        node.tree()              show the tree downstream of this node
+        node.tree(show=True)     show the full tree from the root node
+        node.tree(show=False)    show from current node
+        node.tree('path/to/node' return the node at the chosen location
+        node.tree('/path/to/node specifiy the location starting from root
+        node.tree(node)          add a child node; must be a Node instance
+        node.tree(cut=True)      remove & return a branch; include root metadata
+        node.tree(cut=False)     discard root metadata
+        node.tree(cut='copy')    copy root metadata
+        node.tree(graft=node)    remove & graft a branch; add new root metadata
+        node.tree(graft=(node,True))  as above
+        node.tree(graft=(node,False)) discard root metadata
+        node.tree(graft=(node,'copy') copy new root metadata
+        node.tree(graft=(node,'overwrite') add root metadata, overwrite conflicts
+        node.tree(graft=(node,'copyover') copy root metadata, overwrite conflicts
 
     Showing the tree, retrieving or adding nodes, and cutting or grafting
     branches are also possible using the
 
-        >>> node.show_tree
-        >>> node.get_from_tree
-        >>> node.add_to_tree
-        >>> node.cut_from_tree
-        >>> node.graft
+    .. code-block::
+
+        node.show_tree
+        node.get_from_tree
+        node.add_to_tree
+        node.cut_from_tree
+        node.graft
 
     methods.  See their docstrings for more info.
     The node root can be returned with
@@ -103,8 +111,10 @@ class Node:
 
     Each Node contains
 
-        >>> node.to_h5
-        >>> node.from_h5
+    .. code-block::
+
+        node.to_h5
+        node.from_h5
 
     methods, which write class instances to HDF5 files and generate new
     instances from appropriately formatted HDF5 groups, respectively.
@@ -127,10 +137,12 @@ class Node:
     Otherwise, .to_h5 may be overwritten in your class.  The new method should
     begin
 
-        >>> def to_h5(self, group):
-        >>>     '''describe the data being included '''
-        >>>     grp = ParentClass.to_h5(self, group)
-        >>>     ...
+    .. code-block::
+
+        def to_h5(self, group):
+            '''describe the data being included '''
+            grp = ParentClass.to_h5(self, group)
+            ...
 
     where `ParentClass` is the class yours inherits from.  This will create the
     HDF5 group you're writing to and add all the data normally included. Add
@@ -143,8 +155,10 @@ class Node:
     This file should not require modification in most instances. Instead, two
     helper methods it calls may be overwritten.  When run, node.from_h5 calls
 
-        >>> node._get_constructor_args
-        >>> node._populate_instance
+    .. code-block::
+
+        node._get_constructor_args
+        node._populate_instance
 
     methods.  The first method retreives the arguments which will be passed to
     the class __init__ method from the HDF5 file.  The second method is called
@@ -154,8 +168,10 @@ class Node:
     node._get_constructor_args should be modified to return to arguments and
     values your class' __init__ method expects.  Your new method should begin
 
-        >>> @classmethod
-        >>> def _get_constructor_args(cls, group):
+    .. code-block::
+
+        @classmethod
+        def _get_constructor_args(cls, group):
 
     and end
 

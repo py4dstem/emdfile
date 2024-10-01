@@ -1,7 +1,0 @@
-.. pointlist
-
-PointList
-=========
-
-TODO
-

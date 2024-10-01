@@ -3,8 +3,10 @@
 __pycache__/
 *.egg-info/
 build/
+_build/
 dist/
 .ipynb_checkpoints/
+.DS_Store
 test/unit_test_data/
 
 

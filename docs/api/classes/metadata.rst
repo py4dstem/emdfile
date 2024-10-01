@@ -10,3 +10,13 @@ Each node in an EMD tree may contain any number of Metadata instances.
 
 # TODO
 
+
+.. autoclass:: emdfile.classes::Metadata
+
+
+****************
+Metadata Bundles
+****************
+
+# TODO
+

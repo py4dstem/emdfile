@@ -42,7 +42,7 @@ def read(
 
     Returns
     -------
-    a Root containing the requested data
+    Root or Node or Metadata
     """
     # validate filepath
     assert(isinstance(filepath, (str,pathlib.Path) )), f"filepath must be a string or Path, not {type(filepath)}"

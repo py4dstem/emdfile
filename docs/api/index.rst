@@ -4,9 +4,9 @@
 ===============
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 4
 
-   I/O <io/index.rst>
+   I/O <io.rst>
    Classes <classes/index.rst>
    Utilities <utils.rst>
 

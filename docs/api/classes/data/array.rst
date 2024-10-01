@@ -1,7 +1,0 @@
-.. array
-
-Array
-=====
-
-# TODO
-

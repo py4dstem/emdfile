@@ -1,7 +1,0 @@
-.. pointlistarray
-
-PointListArray
-==============
-
-TODO
-

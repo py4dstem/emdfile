@@ -1,7 +1,0 @@
-.. custom
-
-Custom
-======
-
-TODO
-

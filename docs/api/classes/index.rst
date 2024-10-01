@@ -8,7 +8,7 @@ Classes
 .. toctree::
    :maxdepth: 2
   
-   Data <data/index.rst>
+   Data <data.rst>
    Metadata <metadata.rst>
-   Trees <tree/index.rst> 
+   Trees <tree.rst> 
 
