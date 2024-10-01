@@ -21,6 +21,9 @@ dependencies = [
     'numpy',
 ]
 
+[project.optional-dependencies]
+docs = ["sphinx == 8.0.2"]
+
 [tool.hatch.version]
 path = "src/emdfile/version.py"
 #validate-bump = false
