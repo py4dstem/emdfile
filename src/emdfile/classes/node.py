@@ -17,8 +17,8 @@ class Node:
     classes - some modifications should be made for read and write operations
     to function correctly, discussed further below.
 
-    Interface: Metdata and Data
-    ---------------------------
+    Interface - Metdata and Data
+    ----------------------------
     Metadata is found at
 
         >>> node.metadata
@@ -32,16 +32,14 @@ class Node:
     for additional information.  The node may have data depending on its subclass
     (Array, Pointlist, etc).
 
-    Interface: EMD Trees
-    --------------------
+    Interface - EMD Trees
+    ---------------------
     Nodes may be nested to form EMD trees, each of which must begin with a Root
     type node.
 
-    .. code-block::
-
-        root = Root()
-        node1 = Node('node1')
-        root.tree(node1)
+        >>> root = Root()
+        >>> node1 = Node('node1')
+        >>> root.tree(node1)
 
     creates the data tree
 

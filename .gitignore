@@ -2,8 +2,8 @@
 # Folders #
 __pycache__/
 *.egg-info/
-build/
-_build/
+build/*
+docs/_build/*
 dist/
 .ipynb_checkpoints/
 .DS_Store
