@@ -9,6 +9,9 @@ from emdfile.classes import (
     Custom
 )
 
+# version
+from emdfile.version import __version__
+
 # header hooks
 _PROGRAM_NAME = 'emdfile'
 _USER_NAME = ''
