@@ -9,127 +9,127 @@ class Array(Node):
     """
     Array instances store N-dimensional array-like data.
 
-    Instantiation
-    -------------
-    For some numpy array x
+    .. topic:: Instantiation
 
-    >>> ar = Array( x )
+        For some numpy array x
 
-    creates an Array instance.  Calibrations may be passed on instantion
+        >>> ar = Array( x )
 
-    >>> ar = Array(
-    >>>     np.ones((20,20,256,256)),
-    >>>     name = '4ddatacube',
-    >>>     units = 'intensity',
-    >>>     dims = [
-    >>>         [0,5],
-    >>>         [0,5],
-    >>>         [0,0.01],
-    >>>         [0,0.01]
-    >>>     ],
-    >>>     dim_units = [
-    >>>         'nm',
-    >>>         'nm',
-    >>>         'A^-1',
-    >>>         'A^-1'
-    >>>     ],
-    >>>     dim_names = [
-    >>>         'rx',
-    >>>         'ry',
-    >>>         'qx',
-    >>>         'qy'
-    >>>     ],
-    >>> )
+        creates an Array instance.  Calibrations may be passed on instantion
 
-    "Stack-arrays" are constructed by passing the `slicelables` argument
+        >>> ar = Array(
+        >>>     np.ones((20,20,256,256)),
+        >>>     name = '4ddatacube',
+        >>>     units = 'intensity',
+        >>>     dims = [
+        >>>         [0,5],
+        >>>         [0,5],
+        >>>         [0,0.01],
+        >>>         [0,0.01]
+        >>>     ],
+        >>>     dim_units = [
+        >>>         'nm',
+        >>>         'nm',
+        >>>         'A^-1',
+        >>>         'A^-1'
+        >>>     ],
+        >>>     dim_names = [
+        >>>         'rx',
+        >>>         'ry',
+        >>>         'qx',
+        >>>         'qy'
+        >>>     ],
+        >>> )
 
-    >>> ar = Array(
-    >>>     np.ones((4,50,50)),
-    >>>     name = 'test_array_stack',
-    >>>     units = 'intensity',
-    >>>     dims = [
-    >>>         [0,2],
-    >>>         [0,2]
-    >>>     ],
-    >>>     dim_units = [
-    >>>         'nm',
-    >>>         'nm'
-    >>>     ],
-    >>>     dim_names = [
-    >>>         'rx',
-    >>>         'ry'
-    >>>     ],
-    >>>     slicelabels = [
-    >>>         'a',
-    >>>         'b',
-    >>>         'c',
-    >>>         'd'
-    >>>     ]
-    >>> )
+        "Stack-arrays" are constructed by passing the ``slicelables`` argument
 
-    representing a set of M arrays, each of shape N-1 all calibrated by one set
-    of object calibrations, given Array shape N and initial dimension extent M.
-    Above, M is 4 and the arrays are called 'a', 'b', 'c', 'd'.
+        >>> ar = Array(
+        >>>     np.ones((4,50,50)),
+        >>>     name = 'test_array_stack',
+        >>>     units = 'intensity',
+        >>>     dims = [
+        >>>         [0,2],
+        >>>         [0,2]
+        >>>     ],
+        >>>     dim_units = [
+        >>>         'nm',
+        >>>         'nm'
+        >>>     ],
+        >>>     dim_names = [
+        >>>         'rx',
+        >>>         'ry'
+        >>>     ],
+        >>>     slicelabels = [
+        >>>         'a',
+        >>>         'b',
+        >>>         'c',
+        >>>         'd'
+        >>>     ]
+        >>> )
 
-    The `dims` argument calibrates the array axes. Constant pixel sizes may
-    be specified as length 2 lists, which will extrapolate linearly. For non-
-    linear pixel extents an array of the dim length should be specified, e.g.
+        representing a set of M arrays, each of shape N-1 all calibrated by one set
+        of object calibrations, given Array shape N and initial dimension extent M.
+        Above, M is 4 and the arrays are called 'a', 'b', 'c', 'd'.
 
-    >>> x = np.logspace(0,1,100)
-    >>> y = np.sin(x)
-    >>> ar = Array(
-    >>>     y,
-    >>>     dims = [
-    >>>         x
-    >>>     ]
-    >>> )
+        The ``dims`` argument calibrates the array axes. Constant pixel sizes may
+        be specified as length 2 lists, which will extrapolate linearly. For non-
+        linear pixel extents an array of the dim length should be specified, e.g.
 
-    Data Access
-    -----------
-    For an Array instance ar, data can be accessed as
+        >>> x = np.logspace(0,1,100)
+        >>> y = np.sin(x)
+        >>> ar = Array(
+        >>>     y,
+        >>>     dims = [
+        >>>         x
+        >>>     ]
+        >>> )
 
-        >>> ar.data
+    .. topic:: Data Access
 
-    or can be accessed using numpy-like slicing into the object itself, e.g.
+        For an Array instance ar, data can be accessed as
 
-        >>> ar[:]
+            >>> ar.data
 
-    For stack-arrays, a slice called 'a' can be retrieved with
+        or can be accessed using numpy-like slicing into the object itself, e.g.
 
-        >>> ar['a']
+            >>> ar[:]
 
-    Dimension Vectors
-    -----------------
-    The set of all dim vectors can be retrieved with
+        For stack-arrays, a slice called 'a' can be retrieved with
 
-        >>> ar.dims
+            >>> ar['a']
 
-    and the n'th dim vector with
+    .. topic:: Dimension Vectors
 
-        >>> ar.get_dim(n)
+        The set of all dim vectors can be retrieved with
 
-    Dim vectors should be modified using
+            >>> ar.dims
 
-        >>> ar.set_dim
+        and the n'th dim vector with
 
-    to write a new dimension vector or
+            >>> ar.get_dim(n)
 
-        >>> ar.set_dim_units
-        >>> ar.set_dim_name
+        Dim vectors should be modified using
 
-    to modify dim vector metadata only.
+            >>> ar.set_dim
 
-    Shape Information
-    -----------------
-    Shape information is accessible as normal through
+        to write a new dimension vector or
 
-        >>> ar.data.shape
+            >>> ar.set_dim_units
+            >>> ar.set_dim_name
 
-    Additionally, the following shape properties account for stack arrays
+        to modify dim vector metadata only.
 
-        >>> ar.depth    # 0 for non stacks; # arrays for stacks
-        >>> ar.rank     # N for non stacks; N-1 for stacks
-        >>> ar.shape    # length N for non stacks; length N-1 for stacks
+    .. topic:: Shape Information
+
+        Shape information is accessible as normal through
+
+            >>> ar.data.shape
+
+        Additionally, the following shape properties account for stack arrays
+
+            >>> ar.depth    # 0 for non stacks; # arrays for stacks
+            >>> ar.rank     # N for non stacks; N-1 for stacks
+            >>> ar.shape    # length N for non stacks; length N-1 for stacks
     """
     _emd_group_type = 'array'
     def __init__(
@@ -150,21 +150,21 @@ class Array(Node):
         units : str
             units for the pixel values
         dims : variable
-            calibration vectors for each axis of the data
+            specify calibration vectors for each axis of the data
             array.  Valid values for each element of the list are None,
             a number, a 2-element list/array, or an M-element list/array
-            where M is the data array.  If None is passed, the dim will be
-            populated with integer values starting at 0 and its units will
-            be set to pixels.  If a number is passed, the dim is populated
-            with a vector beginning at zero and increasing linearly by this
-            step size.  If a 2-element list/array is passed, the dim is
-            populated with a linear vector with these two numbers as the first
-            two elements.  If a list/array of length M is passed, this is used
-            as the dim vector, (and must therefore match this dimension's
-            length). If dims recieves a list of fewer than N arguments for an
-            N-dimensional data array, the extra dimensions are populated as if
-            None were passed, using integer pixel values. If the `dims`
-            parameter is not passed, all dim vectors are populated this way.
+            where M is the extent of the corresponding array dimension.  If None
+            is passed, the dim will be populated with integer values starting at
+            0 and its units will be set to pixels.  If a number is passed, the
+            dim is populated with a vector beginning at zero and increasing
+            linearly by this step size.  If a 2-element list/array is passed, the
+            dim is populated with a linear vector with these two numbers as the
+            first two elements.  If a list/array of length M is passed, this is
+            used as the dim vector.  If dims recieves a list of fewer than N
+            arguments for an N-dimensional data array, the extra dimensions are
+            populated as if None were passed, using integer pixel values. If the
+            ``dims`` parameter is not passed, all dim vectors are populated this
+            way.
         dim_units : list
             the units for the calibration dim vectors. If
             nothing is passed, dims vectors which have been populated
@@ -176,9 +176,8 @@ class Array(Node):
             populated with 'pixels' or 'unknown' as above.
         dim_names : list
             labels for each axis of the data array. Values
-            which are not passed, following the same logic as described
-            above, will be autopopulated with the name "dim#" where #
-            is the axis number.
+            which are not passed will be autopopulated with the name "dim#"
+            where # is the axis number.
         slicelabels : None or True or list
             if not None, array will be promoted to a stack array - see object
             docstring for details. If a list is passed it should specify the
@@ -186,7 +185,7 @@ class Array(Node):
 
         Returns
         -------
-        A new Array instance
+        Array
         """
         # instantiate as a None
         super().__init__()
@@ -282,8 +281,8 @@ class Array(Node):
         name:Optional[str]=None
         ):
         """
-        Sets the n'th dim vector, using `dim` as described in the Array
-        documentation. If `units` and/or `name` are passed, sets these
+        Sets the n'th dim vector, using ``dim`` as described in the Array
+        documentation. If ``units`` and/or ``name`` are passed, sets these
         values for the n'th dim vector.
 
         Parameters

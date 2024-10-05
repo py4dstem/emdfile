@@ -8,193 +8,231 @@ class Node:
     """
     Base class for all EMD data object classes.
 
-    Nodes include an interface for metadata and for their EMD data tree.
-    The Node class itself does not include additional data; interface to
-    data blocks therefore vary according to subclass (Array, PointList, etc.)
+    Nodes contain the machinery to create and modify filetree-like relations
+    between themselves and other Node instances; to store arbitrary metadata;
+    and to read/write themselves from/to HDF5 files.
 
-    Nodes also include their own read/write machinery. For downstream package
-    integration - i.e. defining your own classes which inherit from emdfile
-    classes - some modifications should be made for read and write operations
-    to function correctly, discussed further below.
+    .. topic:: EMD Trees
 
-    Interface: Metdata and Data
-    ---------------------------
-    Metadata is found at
+        Nodes can be added to other nodes to create parent-child relations.
+        EMD Trees must begin with a Root type node.  So
 
-        >>> node.metadata
+            >>> root = Root()
+            >>> node = Node('node1')
+            >>> root.tree(node)
 
-    and contains a dictionary of any number of Metadata instances.
-    New metadata can be added using
+        creates the data tree
 
-        >>> node.metadata = Metadata(name='new_metadata', data={'item':1})
+        .. code-block::
 
-    which adds the new instance to the dictionary. See the Metadata docstring
-    for additional information.  The node may have data depending on its subclass
-    (Array, Pointlist, etc).
+            root
+              |---node1
 
-    Interface: EMD Trees
-    --------------------
-    Nodes may be nested to form EMD trees, each of which must begin with a Root
-    type node.
+        and
 
-        >>> root = Root()
-        >>> node1 = Node('node1')
-        >>> root.tree(node1)
+            >>> ...
+            >>> _node = Node('node2')
+            >>> _node.tree(node)
 
-    creates the data tree
+        extends the tree to
 
-        root
-          |---node1
+        .. code-block::
 
-    and
+            root
+              |---node1
+                    |---node2
 
-        >>> ...
-        >>> node2 = Node('node2')
-        >>> node2.tree(node1)
+        The ``node.tree`` method enables displaying the tree, fetching another
+        node, cutting a branch of the tree off to create a new tree, or grafting
+        to/from another tree or subtree.  Usage includes
 
-    extends the tree to
+            >>> node.tree()                # show the tree downstream of this node
+            >>> node.tree(show=True)       # show the full tree from the root node
+            >>> node.tree(show=False)      # show from current node
+            >>> node.tree('path/to/node')  # return the node at the chosen location
+            >>> node.tree('/path/to/node') # specifiy the location starting from root
+            >>> node.tree(node)            # add a child node; must be a Node instance
+            >>> node.tree(cut=True)        # remove & return a branch; include root metadata
+            >>> node.tree(cut=False)       # discard root metadata
+            >>> node.tree(cut='copy')      # copy root metadata
+            >>> node.tree(graft=node)      # remove & graft a branch; add new root metadata
+            >>> node.tree(graft=(node,True))    # as above
+            >>> node.tree(graft=(node,False))   # discard root metadata
+            >>> node.tree(graft=(node,'copy'))  # copy new root metadata
+            >>> node.tree(graft=(node,'overwrite'))  # add root metadata, overwrite conflicts
+            >>> node.tree(graft=(node,'copyover'))  # copy root metadata, overwrite conflicts
 
-        root
-          |---node1
-                |---node2
+        Showing the tree, retrieving or adding nodes, and cutting or grafting
+        branches can equivalently be performed using the
 
-    Each node may contain its own data and metada. The
+            >>> node.show_tree
+            >>> node.get_from_tree
+            >>> node.add_to_tree
+            >>> node.cut
+            >>> node.graft
 
-        >>> node.tree
+        methods.  See their docstrings for more info, including discussion of
+        root metadata merge conflict handling in ``cut`` and ``graft`` operations.
 
-    method enables displaying the tree, fetching another node, cutting a branch
-    of the tree off to create a new tree, or grafting to/from another tree or
-    subtree.  Usage includes
+    .. topic:: Roots
 
-        >>> node.tree()                # show the tree downstream of this node
-        >>> node.tree(show=True)       # show the full tree from the root node
-        >>> node.tree(show=False)      # show from current node
-        >>> node.tree('path/to/node')  # return the node at the chosen location
-        >>> node.tree('/path/to/node') # specifiy the location starting from root
-        >>> node.tree(node)            # add a child node; must be a Node instance
-        >>> node.tree(cut=True)        # remove & return a branch; include root metadata
-        >>> node.tree(cut=False)       # discard root metadata
-        >>> node.tree(cut='copy')      # copy root metadata
-        >>> node.tree(graft=node)      # remove & graft a branch; add new root metadata
-        >>> node.tree(graft=(node,True))    # as above
-        >>> node.tree(graft=(node,False))   # discard root metadata
-        >>> node.tree(graft=(node,'copy'))  # copy new root metadata
-        >>> node.tree(graft=(node,'overwrite'))  # add root metadata, overwrite conflicts
-        >>> node.tree(graft=(node,'copyover'))  # copy root metadata, overwrite conflicts
+        A node's root can be returned with
 
-    Showing the tree, retrieving or adding nodes, and cutting or grafting
-    branches are also possible using the
+            >>> node.root
 
-        >>> node.show_tree
-        >>> node.get_from_tree
-        >>> node.add_to_tree
-        >>> node.cut_from_tree
-        >>> node.graft
+        The default root is ``None``, and such nodes are called unrooted.
+        Unrooted nodes can't perform tree operations other than be added to
+        a root or rooted node. If written to file, a root will be added.
 
-    methods.  See their docstrings for more info.
-    The node root can be returned with
+        A root's metadata is considered associated with all nodes in its tree,
+        and any write operations emanating from this tree will include its root
+        metadata. Cut and merge node.tree behaviors include several root metadata
+        handling options - see those docstrings for details.
 
-        >>> node.root
+    .. topic:: Metadata
 
-    Downstream Integration: Read & Write New Classes
-    -------------------------------------------------
-    For simple emdfile usage, this section is not required; the info that follows
-    is needed for creating new classes inheriting from emdfile classes.
+        Metadata can be added to a Node using
 
-    Each Node contains
+            >>> node.metadata = Metadata(name='new_metadata', data={'item':1})
 
-        >>> node.to_h5
-        >>> node.from_h5
+        which then becomes accessible at
 
-    methods, which write class instances to HDF5 files and generate new
-    instances from appropriately formatted HDF5 groups, respectively.
-    Guidelines for modifying these methods to create new classes follow.
+            >>> node.metadata['new_metadata']
 
-    .to_h5
-    ------
-    This method will create a new HDF5 group and populate it with everything
-    in node.metadata, top level group tags, and depending on the node class
-    type, some data.  See the .to_h5 docstring for individual classes for
-    description of that data.
+        Any number of Metadata instances may be added in this way, and each
+        Metadata instance can contain an arbitrary tree of items - see the
+        Metadata docstring.
 
-    In cases where additional data needs to be written to the file, first ask
-    - can the data be added to node.metadata?
-    - can the data be included by inheriting a different emd node type (e.g.
-      a custom node?)
-    If the data can be easily included with these methods, no modification of
-    .to_h5 should be needed.
+        Inspect all the Metadata instances in a node with
 
-    Otherwise, .to_h5 may be overwritten in your class.  The new method should
-    begin
+            >>> node.metadata
 
-        >>> def to_h5(self, group):
-        >>>     '''describe the data being included '''
-        >>>     grp = ParentClass.to_h5(self, group)
-        >>>     ...
+        which returns a dictionary.
 
-    where `ParentClass` is the class yours inherits from.  This will create the
-    HDF5 group you're writing to and add all the data normally included. Add
-    any additional required code, then conclude with
+    .. topic:: I/O
 
-        >>> return grp
+        Nodes include their own read/write machinery which is used by the
+        ``read`` and ``save`` functions.  To generate new classes which will
+        read and write seemlessly into EMD files using these functions, the
+        new class should inherit from an appropirate emdfile class, then
+        modify the class I/O methods as appropriate - see Downstream Integration
+        below for details.
 
-    .from_h5
-    --------
-    This file should not require modification in most instances. Instead, two
-    helper methods it calls may be overwritten.  When run, node.from_h5 calls
+    .. topic:: I/O: Downstream Integration
 
-        >>> node._get_constructor_args
-        >>> node._populate_instance
+        Each Node contains
 
-    methods.  The first method retreives the arguments which will be passed to
-    the class __init__ method from the HDF5 file.  The second method is called
-    post-instantiation to perform any additional setup or modification of
-    the new instance.
+            >>> node.to_h5
+            >>> node.from_h5
 
-    node._get_constructor_args should be modified to return to arguments and
-    values your class' __init__ method expects.  Your new method should begin
+        methods, which write class instances to HDF5 files and generate new
+        instances from appropriately formatted HDF5 groups, respectively. Each
+        expects an h5py.Group argument.
 
-        >>> @classmethod
-        >>> def _get_constructor_args(cls, group):
+        ``.to_h5`` creates a new child HDF5 group and populates it with top level
+        tags and all Metadata instances in node.metadata. If the node has a
+        data-containing subtype like Array, PointList, PointListArray, or Custom,
+        these will add their own data - see the .to_h5 docstrings for individual
+        classes for details.
 
-    and end
+        If additional information needs to be stored in some new class inheriting
+        from an emdfile class, the .to_h5 method should be modified by
+        overwriting it in the class definition. The new method should include
 
-        >>> return args
+            >>> def to_h5(self, group):
+            >>>     '''describe the data being included '''
+            >>>     ...
+            >>>     grp = ParentClass.to_h5(self, group)
+            >>>     ...
 
-    where `args` is a dictionary of the __init__ method inputs. You can use
+        where ``ParentClass`` is the parent class. Alternatively, the Python
+        ``super().to_h5`` syntax can be used, however in cases of multiple
+        inheritance you should then be mindful of which class super() will
+        refer to, which is determined by the
+        `method resolution order <https://docs.python.org/3/howto/mro.html#python-2-3-mro>`_
+        rules.  This method call creates the HDF5 group you're writing to and adds
+        all the data normally included. Add any additional required code, then
+        conclude the method definition with
 
-        >>> parent_class_args = ParentClass._get_constructor_args(group)
+            >>> return grp
 
-    to retrieve standard argument/value pairs from the parent class. The output
-    dictionary keys are identical to the input argument names for the class
-    constructors, i.e. for Array instances the keys are 'data', 'name', 'units',
-    'dims', 'dim_names', 'dim_units', and 'slicelabels'.
+        A simple way to include additional data is to add it as metadata before
+        calling super().to_h5.  For instance, for a class with some attribute
+        ``x`` that needs to be stored write
 
-        >>> def _populate_instance(self, group):
+            >>> def to_h5(self, grou):
+            >>>     '''store attribute x'''
+            >>>     self.metadata = Metadata(
+            >>>         name = 'class_attributes',
+            >>>         data = {'x' : self.x}
+            >>>     )
+            >>>     grp = super().to_h5(self, group)
+            >>>     return grp
 
-    then add any code required to populate the new class instance with the
-    required data.
+        You'll then need to make sure this data is read successfully by modifying
+        another method, discussed next.
 
-    Downstream Integration: Hooking Dependent Packages
-    ---------------------------------------------------
-    If another Python module defines its own child classes of emdfile classes,
-    add
+        The ``.from_h5`` method should not require modification in most
+        instances - instead, its two helper methods should be overwritten. When
+        run, node.from_h5 calls
 
-        >>> _emd_hook = True
+            >>> node._get_constructor_args
+            >>> node._populate_instance
 
-    as a global variable in its top-level namespace (e.g. in the top level
-    __init__.py file). This ensures that emdfile is able to find the appropriate
-    class definition when reading instances of this class from files.
+        The first method must return the arguments which will be passed to the
+        class __init__ method.  The second method is called post-instatiation
+        to perform any additional setup or modification of the new instance.
 
-    Extras
-    ------
-    Sometimes a class method will generate data which is itself an emdfile node.
-    Decorating such a method with
+        In the example above, to ensure the ``x`` value is correctly populated
+        after reading a class instance's data from a file, you can use
 
-        >>> @newnode
+            >>> def _populate_instance(self, group):
+            >>>     md = self.metadata['class_attributes']
+            >>>     self.x = md['x']
 
-    modifies the mathod such that it (1) adds the new node to the tree of the
-    generating node, and (2) adds metadata describing how that node was made.
+        In general a new class may have different constructor arguments than the
+        emdfile node type it inherits from.  In this case, modify
+        ``._get_constructor_args`` to return a dictionary of keywords and values
+        which will be passed to the class ``__init__`` method at read time.
+
+        The definition should begin
+
+            >>> @classmethod
+            >>> def _get_constructor_args(cls, group):
+
+        and end
+
+            >>> return args
+
+        where ``args`` is a dictionary. You can retrieve the constructor arguments
+        from the parent class with
+
+            >>> parent_class_args = ParentClass._get_constructor_args(group)
+
+        The result is a dictionary of names and values corresponding to the parent
+        class, i.e. if the superclass is Array the returned keys are 'data',
+        'name', 'units', 'dims', 'dim_names', 'dim_units', and 'slicelabels'.
+
+    .. topic:: Downstream Integration: Hook
+
+        To integrate a Python module with emdfile, add
+
+            >>> _emd_hook = True
+
+        as a global variable in tje top-level namespace, e.g. in the top level
+        __init__.py file.  This ensures that any classes you define inheriting
+        from emdfile will be discoverable by the ``emdfile.read`` method.
+
+    .. topic:: Extras: @newnode wrapper
+
+        Sometimes a node class method will return data which is itself an emdfile
+        node. Decorating such a method with
+
+            >>> @newnode
+
+        modifies the method such that it (1) adds the new node to the tree of the
+        generating node, and (2) adds metadata describing how the new node was
+        made to itself, available at ``.metadata['_generating_md']``.
     """
     _emd_group_type = 'node'
     def __init__(
@@ -233,7 +271,7 @@ class Node:
 
     def show_tree(self,root=False):
         """
-        Display the object tree. If `root` is False, displays the branch
+        Display the object tree. If ``root`` is False, displays the branch
         of the tree downstream from this node, and if True, displays
         the full tree from the root node.
         """
@@ -246,8 +284,8 @@ class Node:
 
     def add_to_tree(self,node):
         """
-        Add `node` to the current tree as a child of this node.
-        Note that if `node` has a root, this will error out - in this case, use
+        Add ``node`` to the current tree as a child of this node.
+        Note that if ``node`` has a root, this will error out - in this case, use
         either .graft or .force_add_to_tree instead.
         """
         assert(isinstance(node,Node))
@@ -259,10 +297,10 @@ class Node:
 
     def force_add_to_tree(self,node):
         """
-        Add `node` to the current tree as a child of this node, whether or not
-        `node` has a root.  If it has no root, performs a simple add. If has a
-        root, performs a graft, excluding the root metadata from `node`. Note
-        that this means the branch downstream of `node` will also be moved to
+        Add ``node`` to the current tree as a child of this node, whether or not
+        ``node`` has a root.  If it has no root, performs a simple add. If has a
+        root, performs a graft, excluding the root metadata from ``node``. Note
+        that this means the branch downstream of ``node`` will also be moved to
         the current tree.
         """
         try:
@@ -272,10 +310,10 @@ class Node:
 
     def get_from_tree(self,name):
         """
-        Finds and returns the node from the current tree matching `name`, which
+        Finds and returns the node from the current tree matching ``name``, which
         must be a string with '/' delimiters between 'parent/child' nodes.
-        Search from the current node, or from the root node if `name` begins
-        with '/'. So
+        Search from the current node, or from the root node if ``name`` begins
+        with '/'.  So
 
             >>> self.get_from_tree('x/y')
 
@@ -374,7 +412,7 @@ class Node:
     def graft(self,node,merge_metadata=True):
         """
         Grafts a branch from one EMD tree onto another. The branch beginning at
-        `node` is moved onto this tree underneath this node.
+        ``node`` is moved onto this tree underneath this node.
 
         For the reverse - i.e. grafting *from* this tree *to* another tree -
         either use that tree's .graft method, or use this tree's ._graft.
@@ -388,18 +426,19 @@ class Node:
             skipping entries that exist in both.  If False, adds no metadata.
             If "overwrite", entries existing in both scion and stock root
             metadata are overwritten.  If "copy", scion root metadata are
-            copied to the stock root.
+            copied to the stock root, skipping conflicts.  If "copyover",
+            conflicting scion/stock roots are also copied and overwritten.
 
         Returns
         -------
-        (Node) this tree's root node
+        (Root) this tree's root node
         """
         return node._graft(
             self,
             merge_metadata=merge_metadata
         )
 
-    def cut_from_tree(self,root_metadata=True):
+    def cut(self,root_metadata=True):
         """
         Removes from the tree the branch beginning at this node, and returns it
         as a new tree.  A new root is created at the base of the tree named
@@ -414,7 +453,7 @@ class Node:
 
         Returns
         -------
-        (Node) the new root node
+        (Root) the new root node
         """
         from emdfile import Root
         new_root = Root( name=self.root.name+'_cut_'+self.name)
@@ -442,6 +481,9 @@ class Node:
             >>> node.tree(graft=(node,'copy'))  # copy new root metadata
             >>> node.tree(graft=(node,'overwrite'))  # add root metadata, overwrite conflicts
             >>> node.tree(graft=(node,'copyover'))  # copy root metadata, overwrite conflicts
+
+        See the node.show, node.cut, node.graft, and node.add_to_tree docstrings
+        for more info.
         """
         # if `arg` is passed, choose behavior from its type
         if isinstance(arg,bool):
@@ -481,7 +523,7 @@ class Node:
                     f".tree(get=value) requires type(value)==str, not {type(v)}"
                 return self.get_from_tree(v)
             elif k == 'cut':
-                return self.cut_from_tree(root_metadata=v)
+                return self.cut(root_metadata=v)
             elif k == 'graft':
                 if isinstance(v,Node):
                     n,m = v,True
@@ -496,7 +538,7 @@ class Node:
     @staticmethod
     def newnode(method):
         """
-        Decorated methods must produce and return a new node.  After decoration
+        Decorated methods must return a new node.  After decoration
         the new node will be added to the parent node's tree with a Metadata
         instance storing information about how the node was created, namely,
         the method's name, the parent's class and name, and all arguments passed
@@ -520,7 +562,7 @@ class Node:
             # Combine with kwargs
             kwargs.update(d)
             # and make the metadata
-            md = Metadata( name = "_fn_call_" + method_name )
+            md = Metadata( name = "_generating_md" )
             md._params.update( kwargs )
             # Run the method, get the returned node
             new_node = method(*args,**kwargs)
@@ -556,8 +598,8 @@ class Node:
     @classmethod
     def from_h5(cls,group):
         """
-        Takes an h5py Group which is open in read mode. Confirms that a
-        a Node of this name exists in this group, and loads and returns it
+        Takes an h5py.Group which is open in read mode. Confirms that a
+        Node of this name exists in this group, and loads and returns it
         with it's metadata.
 
         Parameters
@@ -606,7 +648,7 @@ class Node:
     # write
     def to_h5(self,group):
         """
-        Creates a subgroup in `group` and writes this node into that group,
+        Creates a subgroup in ``group`` and writes this node into that group,
         including the group tags (emd_group_type, python_class), and the
         node's metadata. No data beyond metadata and tags is written.
 

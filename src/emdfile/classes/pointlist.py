@@ -7,57 +7,57 @@ from emdfile.classes.node import Node
 class PointList(Node):
     """
     PointList instances represent sets of points in some M dimensional space.
-    Each dimension is given by a named field and has its own dtype. Internally,
-    this data corresponds to a numpy structured array.
+    Each dimension is given by a named field and has its own dtype. See also
+    the documentation for `numpy structured arrays <https://numpy.org/doc/stable/user/basics.rec.html>`_.
 
-    Instantiation
-    -------------
-    For some numpy structured array like
+    .. topic:: Instantiation
 
-        >>> x = np.ones(
-        >>>     10,
-        >>>     dtype = [('x',float),('y',int)]
-        >>> )
+        For some numpy structured array like
 
-    then calling
+            >>> x = np.ones(
+            >>>     10,
+            >>>     dtype = [('x',float),('y',int)]
+            >>> )
 
-        >>> pl = PointList(
-        >>>     x,
-        >>>     name = 'my_pointlist',
-        >>> )
+        then calling
 
-    will create a pointlist of length 10 with fields 'x' and 'y'.
+            >>> pl = PointList(
+            >>>     x,
+            >>>     name = 'my_pointlist',
+            >>> )
 
-    Data Access
-    -----------
-    The data can be accessed by
+        will create a pointlist of length 10 with fields 'x' and 'y'.
 
-        >>> pl.data
+    .. topic:: Data Access
 
-    or by numpy-like slicing into the object directly
+        The data can be accessed by
 
-        >>> pl[:]
+            >>> pl.data
 
-    and he individual fields can be accessed by slicing like
+        or by numpy-like slicing into the object directly
 
-        >>> pl['x']
+            >>> pl[:]
 
-    Properties & Methods
-    --------------------
-    The following are valid pointlist properties or constructions
+        and he individual fields can be accessed by slicing like
 
-        >>> pl.dtype
-        >>> pl.fields
-        >>> pl.length == len(pl)
+            >>> pl['x']
 
-    The following are valid methods
+    .. topic:: Properties & Methods
 
-        >>> pl.copy()                 # return a copy
-        >>> pl.add(data)              # concatenates additional data
-        >>> pl + data                 # concatenates additional data
-        >>> pl.remove(mask)           # removes indicated data points
-        >>> pl.sort('x','ascending')  # sort by the selected field
-        >>> pl.add_fields(new_fields) # return a new pointlist with added fields
+        The following are valid pointlist properties or constructions
+
+            >>> pl.dtype
+            >>> pl.fields
+            >>> pl.length == len(pl)
+
+        The following are valid methods
+
+            >>> pl.copy()                 # return a copy
+            >>> pl.add(data)              # concatenates additional data
+            >>> pl + data                 # concatenates additional data
+            >>> pl.remove(mask)           # removes indicated data points
+            >>> pl.sort('x','ascending')  # sort by the selected field
+            >>> pl.add_fields(new_fields) # return a new pointlist with added fields
     """
     _emd_group_type = 'pointlist'
     def __init__(
@@ -186,7 +186,7 @@ class PointList(Node):
     def add_data_by_field(self, data, fields=None):
         """
         Add a list of data arrays to the PointList, in the fields
-        given by `fields`. If `fields` is not specified, assumes the data
+        given by ``fields``. If ``fields`` is not specified, assumes the data
         arrays are in the same order as self.fields
 
         Parameters

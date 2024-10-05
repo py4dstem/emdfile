@@ -33,6 +33,7 @@ html_theme = 'alabaster'
 html_theme_options = {
     'description' : 'An HDF5/Python interface',
     'fixed_sidebar' : 'true',
+    'sidebar_collapse' : 'true',
     'show_relbar_bottom' : 'true',
     'github_banner' : 'true',
     'github_button' : 'true',
@@ -42,6 +43,7 @@ html_theme_options = {
 html_sidebars = {
     '**' : [
         'about.html',
+        'localtoc.html',
         'navigation.html',
         'relations.html',
         'searchbox.html',

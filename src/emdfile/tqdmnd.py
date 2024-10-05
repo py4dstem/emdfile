@@ -53,23 +53,26 @@ def tqdmnd(*args, **kwargs):
 
     with a tqdmnd-style progress bar printed to standard output.
 
-    Accepts:
-        *args: Any number of integers or iterators. Each integer N
-            is converted to a `range(N)` iterator. Then a loop is
-            constructed from the Cartesian product of all iterables.
-        **kwargs: keyword arguments passed through directly to tqdm.
-            Full details are available at https://tqdm.github.io
-            A few useful ones:
-                disable (bool): if True, hide the progress bar
-                keep (bool): if True, delete the progress bar after completion
-                unit (str): unit name for the display of iteration speed
-                unit_scale (bool): whether to scale the displayed units and add
-                    SI prefixes
-                desc (str): message displayed in front of the progress bar
+    Parameters
+    ----------
+    *args: Any number of integers or iterators. Each integer N
+        is converted to a `range(N)` iterator. Then a loop is
+        constructed from the Cartesian product of all iterables.
+    **kwargs: keyword arguments passed through directly to tqdm.
+        Full details are available at https://tqdm.github.io
+        A few useful ones:
+            disable (bool): if True, hide the progress bar
+            keep (bool): if True, delete the progress bar after completion
+            unit (str): unit name for the display of iteration speed
+            unit_scale (bool): whether to scale the displayed units and add
+                SI prefixes
+            desc (str): message displayed in front of the progress bar
 
-    Returns:
-        At each iteration, a tuple of indices is returned, corresponding to the
-        values of each input iterator (in the same order as the inputs).
+    Returns
+    -------
+    (variable)
+        At each iteration, a tuple of indices is returned, corresponding
+        to the values of each input iterator (in the same order as the inputs).
     """
     r = [range(i) if isinstance(i, (int, integer)) else i for i in args]
     return tqdm(nditer(*r), **kwargs)

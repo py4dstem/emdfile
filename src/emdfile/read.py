@@ -21,23 +21,37 @@ def read(
     **legacy_options,
     ):
     """
-    File reader for EMD (Berkeley) files.
+    A file reader for EMD (Berkeley) files.
+
+    Both the current EMD 1.0 file format and the older EMD 0.1 format are
+    supported. The specifications can be found at https://emdatasets.com/format/
+    and https://emdatasets.com/emd-0-1/, respectively.
+
+    To read a subset of a file, specify a target node with the ``emdpath``
+    argument and the recursion behavior with the ``tree`` argument. For files
+    containing a single EMD tree, read the entire file by passing no arguments
+    beyond the filepath.  For files containing multiple EMD trees, trees must
+    be read one and a time - specify a tree of interest by passing its root to
+    ``emdpath``.
 
     Parameters
     ----------
     filepath : str or Path
         the file path
     emdpath : str or None
-        path to the node in an EMD file tree to read from. If None, reads the
-        whole file if the file contains a single root, or returns a list of root
-        group names if the file contains many roots.  To read from a node other
-        than a root node, use '/' delimiters between node names.
+        to read a subset of the file, set this argument to the HDF5 goup path of
+        a target node in the file. If None and the file contains a single root,
+        that root is set as the target node.  If None and the file contains
+        multiple roots, a list of rootnames is returned and a warning raised;
+        target the tree associated with a single root by passing its name to this
+        argument.  To target any other node, specify its path using ``'/'``
+        delimiters.
     tree : True or False or None
-        indicates what data should be loaded.  If True, read the entire tree
-        starting at and downstream of the node indicated by `emdpath`.  If False,
-        read that node only.  If None, return the entire tree downstream of but
-        excluding the node at `emdpath`.  Note that if `emdpath` points to a root
-        node, setting `tree` to None or True are equivalent - both return the
+        indicates what data should be loaded.  If True reads the entire tree
+        starting at and downstream of the target node.  If False,
+        read the target node only.  If None, return the entire tree downstream of but
+        excluding the target node.  Note that if ``emdpath`` points to a root
+        node, setting ``tree`` to None or True are equivalent - both return the
         whole data tree.
 
     Returns

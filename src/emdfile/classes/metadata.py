@@ -5,83 +5,84 @@ from os.path import basename
 
 class Metadata:
     """
-    Each Node contains arbitrarily many Metadata instances, each of which
-    contains arbitrary metadata nested to arbitrary depth. Each node's set
-    of Metadata instances are called its metadata bundle.
+    A Metadata instance holds an arbitrary collection of metadata items,
+    nested to any depth.  Nodes may contain arbitrarily many Metadata
+    instances, accessible through their ``.metadata`` propery.
 
-    Metadata Instances
-    ------------------
-    Calling
+    .. topic:: Metadata Instances
 
-        >>> md = Metadata()
-        >>> md['param'] = value
-        >>> v = meta['param']
+        Calling
 
-    creates a metadata instance, assigns a value to a key, and retrieves it,
-    and
+            >>> md = Metadata()
+            >>> md['param'] = value
+            >>> v = meta['param']
 
-        >>> md = Metadata(
-        >>>     name='md1',
-        >>>     data={'x':1,'y':2}
-        >>> )
+        creates a metadata instance, assigns a value to a key, and retrieves it,
+        and
 
-    creates a named Metadata instance already containing some items, and
+            >>> md = Metadata(
+            >>>     name='md1',
+            >>>     data={'x':1,'y':2}
+            >>> )
 
-        >>> md2 = Metadata(
-        >>>     'm2',
-        >>>     {
-        >>>         'a' : 1,
-        >>>         'b' : {
-        >>>             'c' : 2,
-        >>>             'd' : 3
-        >>>         }
-        >>>     }
+        creates a named Metadata instance already containing some items, and
 
-    creates an instance with nesting. Values may take on datatypes including
-        - numbers
-        - strings
-        - arrays
-        - bools
-        - dicts
-        - None
-        - tuples
-            - empty
-            - of numbers
-            - of tuples
-            - of arrays
-            - of strings
-        - lists
-            - empty
-            - of numbers
-            - of arrays
-            - of strings
+            >>> md2 = Metadata(
+            >>>     'm2',
+            >>>     {
+            >>>         'a' : 1,
+            >>>         'b' : {
+            >>>             'c' : 2,
+            >>>             'd' : 3
+            >>>         }
+            >>>     }
 
-    Metadata instances include a
+        creates an instance with nesting. Values may take on datatypes including
+            - numbers
+            - strings
+            - arrays
+            - bools
+            - dicts
+            - None
+            - tuples
+                - empty
+                - of numbers
+                - of tuples
+                - of arrays
+                - of strings
+            - lists
+                - empty
+                - of numbers
+                - of arrays
+                - of strings
 
-        >>> md.copy
-        >>> md.keys
+        Metadata instances include a
 
-    method and attribute, respectively.
+            >>> md.copy
+            >>> md.keys
 
-    Metadata Bundles
-    ----------------
-    Each node may contain arbitrarily many Metadata instances.  These are accesed
-    with
+        method and attribute, respectively.
 
-        >>> node.metadata
+    .. topic:: Nodes and Metadata
 
-    property which, when called as above, returns a dictionary of all Metadata
-    instances in the bundle. New Metadata instances are added by assignement, so
+        Each Node instance may contain arbitrarily many Metadata instances.
+        These are accesed with
 
-        >>> node.metadata = Metadata('md1',{'x':1,'y':2})
-        >>> node.metadata = Metadata('md2',{'a':1,'b':{'c':2,'d':3}})
+            >>> node.metadata
 
-    will add both the 'md1' and 'md2' instances to the node's metadata bundle,
-    and
+        which, when called as above, returns a dictionary of all contained
+        Metadata instances. New Metadata instances are added by assignement, so
 
-        >>> node.metadata['md1']
+            >>> node.metadata = Metadata('md1',{'x':1,'y':2})
+            >>> node.metadata = Metadata('md2',{'a':1,'b':{'c':2,'d':3}})
 
-    will subsequently return Metadata instance 'md1'.
+        will add both the 'md1' and 'md2' instances to the node, and
+
+            >>> node.metadata['md1']
+
+        will subsequently return Metadata instance 'md1'. When saved to
+        an HDF5 file, all the metadata instances returned by a node's
+        ``.metadata`` property are saved to that nodes metadatabundle group.
     """
     _emd_group_type = 'metadata'
     def __init__(

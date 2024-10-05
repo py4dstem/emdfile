@@ -14,42 +14,42 @@ class PointListArray(Node):
     dimensions of a fixed shape and one of variable length, embedded in an
     M dimensional space for PointLists with M fields.
 
-    Instantiation
-    -------------
-    Calling
+    .. topic:: Instantiation
 
-        >>> pla = PointListArray(
-        >>>     [('a',float),('b',float)],
-        >>>     (5,5)
-        >>> )
+        Calling
 
-    will create a 5x5 PointListArray instance with fields 'a' and 'b', and
+            >>> pla = PointListArray(
+            >>>     [('a',float),('b',float)],
+            >>>     (5,5)
+            >>> )
 
-        >>> dt = np.dtype([('a',float,('b',float)])
-        >>> for x in range(5):
-        >>>     for y in range(5):
-        >>>         pla[x,y] += np.zeros(x+y,dt)
+        will create a 5x5 PointListArray instance with fields 'a' and 'b', and
 
-    will populate it with some data. Element assignment currently may only be
-    made to PointLists, so using direct assignment the code above must be
+            >>> dt = np.dtype([('a',float,('b',float)])
+            >>> for x in range(5):
+            >>>     for y in range(5):
+            >>>         pla[x,y] += np.zeros(x+y,dt)
 
-        >>> dt = np.dtype([('a',float,('b',float)])
-        >>> for x in range(5):
-        >>>     for y in range(5):
-        >>>         pla[x,y] = PointList(np.zeros(x+y,dt))
+        will populate it with some data. Element assignment currently may only be
+        made to PointLists, so using direct assignment the code above must be
 
-    Attributes & Methods
-    --------------------
-    PointListArrays include attributes
+            >>> dt = np.dtype([('a',float,('b',float)])
+            >>> for x in range(5):
+            >>>     for y in range(5):
+            >>>         pla[x,y] = PointList(np.zeros(x+y,dt))
 
-        >>> pla.shape
-        >>> pla.dtype
-        >>> pla.fields
+    .. topic:: Attributes & Methods
 
-    and methods
+        PointListArrays include attributes
 
-        >>> pla.copy        # returns a copy
-        >>> pla.add_fields  # returns a copy with additional fields
+            >>> pla.shape
+            >>> pla.dtype
+            >>> pla.fields
+
+        and methods
+
+            >>> pla.copy        # returns a copy
+            >>> pla.add_fields  # returns a copy with additional fields
     """
     _emd_group_type = "pointlistarray"
     def __init__(

@@ -3,22 +3,40 @@
 ``emdfile`` Documentation
 =========================
 
-The ``emdfile`` Python package reads and writes `HDF5 <https://emdatasets.com/the-hdf5-file-format>`_ files
-following the `EMD 1.0 standard <https://emdatasets.com/format>`_, which is designed to hold arbitrary data and metadata.
+``emdfile`` is a Python package that reads and writes `HDF5 <https://emdatasets.com/the-hdf5-file-format>`_ files
+according to the `EMD 1.0 standard <https://emdatasets.com/format>`_.
+It defines :ref:`read <read>` and :ref:`save <save>` functions and a small set of :doc:`classes <api/classes/index>` which together interface between EMD 1.0 and Python runtime objects.
 
-``emdfile`` defines write and read functions and a set of data-containing classes which together interface between EMD 1.0 and Python runtime objects.  The classes enable quickly building, saving, and reading filetree-like representations of data and metadata.  It is built on HDF5 and ``h5py``.
+:ref:`Installation <installation>`, :doc:`examples and usage <examples-usage>`, and the :doc:`API <api/index>` follow.
+If you run into any issues, please let us know by `filing an issue <https://github.com/py4dstem/emdfile/issues>`_ on github.
 
 
-# TODO
+.. _installation:
 
-========
+************
+Installation
+************
+
+Install with
+
+.. code-block::
+
+    pip install emdfile
+
+from the command line.
+
+
+
+********
 Contents
-========
+********
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 5
+   :titlesonly:
 
-   Install <install.rst>
-   Examples <examples.rst>
+   Examples and Usage <examples-usage.rst>
    API <api/index.rst>
+
+
 

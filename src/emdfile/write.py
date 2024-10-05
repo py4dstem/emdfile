@@ -24,9 +24,16 @@ def write(
     Parameters
     ----------
     filepath : str
-        Save path
-    data : emdfile.Node instance
-        The data
+        The file path
+    data : see below
+        The data to save.  May be an emdfile Node, a numpy array, a Python
+        dictionary, or a list of objects of those types.  Numpy arrays will be
+        saved as a root containing a single Array type node and Python
+        dictionaries will be stored as root Metadata. Lists will be
+        stored as a flat tree, i.e. all objects stored under a single root.
+        Lists of N roots will be stored as a set of N EMD trees. For Node-like
+        inputs, beavior depends on the ``mode``, ``tree``, and ``emdpath``
+        arguments.
     mode : str
         Valid modes are write ('w','write'), overwrite ('o','overwrite'), append
         ('a','+','append'), and append-over ('ao','oa','o+','+o','appendover').
@@ -34,23 +41,27 @@ def write(
         of this name already exists.  Overwrite mode deletes any file of
         this name that already exists and writes a new file. Append and
         appendover mode write a new file if no file of this name exists,
-        or if a file of this name does exist, adds new data to the file.
-        How new data is added to an existing file depends on the `data`,
-        `emdpath`, and `tree` arguments. Both 'a' and 'ao' modes attempt to
-        detemine the difference between the data passed and that present in the
-        existing HDF5 file, adding any data not already in the H5 and either
-        skipping ('a') or overwriting ('ao') existing data.
+        or if a file of this name does exist, adds new data to the file,
+        attempting to detemine the difference between the data passed and that
+        already present in the HDF5 file.  Data not already in the file is added,
+        and existing data is either skipped (append mode) or overwritten
+        (appendover mode).
     tree : True or False or None
-        assuming `data` is a node containing a downstream tree of nodes,
-        `tree` determines how the downstream tree should be treated.  If True
-        (default), the entire tree is saved. If False, only the node itself is
-        saved. If None, the downstream tree is saved, but the `data` node itself
-        is excluded.
+        If ``data`` is a node, ``tree`` determines how the tree of nodes downstream
+        of ``data`` should be treated.  If True (default), the full downstream tree
+        is saved. If False, only the node itself is saved. If None, the
+        downstream tree is saved, but the ``data`` node itself is excluded.
     emdpath : str or None
         In append or append-over mode, indicates where in the existing HDF5
-        file to graft the data.  Must be a '/' delimited string pointing to an
-        existing node. Passing the `emdpath` argument automatically changes the
-        mode to append if it was set to write or overwrite.
+        file to graft the data.  Must be a ``'/'`` delimited string pointing to an
+        existing node. Passing the ``emdpath`` argument automatically changes the
+        mode to append if it was set to write or overwrite. If append mode is
+        specified and ``emdpath`` is not passed, the name of ``data``'s root is
+        compared to the root names in the H5 file. If the passed root name is
+        not already in the file, a new EMD tree is added. If the name is already
+        in the file, a diffmerge-like append is performed, comparing the trees
+        and adding any new nodes and skipping or overwriting existing nodes
+        according to the ``mode`` argument.
     """
     # parse mode
     writemode = ['w', 'write']

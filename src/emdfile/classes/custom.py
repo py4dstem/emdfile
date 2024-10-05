@@ -7,49 +7,46 @@ class Custom(Node):
     """
     The purpose of Custom nodes is to support creation of new classes by
     composition of emdfile classes. To do so, create a class inheriting
-    from Custom, then add attributes which are emdfile classes
+    from Custom, then add attributes which are emdfile classes, for
+    instance
 
         >>> class X(Custom):
-        >>>     def __init__(self, name):
+        >>>     def __init__(self, name, asize, bsize):
         >>>         Custom.__init__(self, name=name)
-        >>>         self.a = Array(np.ones((2,2)),'a')
+        >>>         self.a = Array(np.ones((asize)),'a')
+        >>>         self.b = Array(np.ones((bsize)),'b')
 
-    For some X instance x, on write x.a is saved, as is any attribute
-    pointing to a Node instance. Including
+    For some X instance x, on write x.a and x.b will be saved, along with any
+    other attributes pointing to Node instances.
 
-        >>>         ...
-        >>>         self.b = Custom('b')
-        >>>         b.c = Array((3,3),'c')
+    .. topic:: Downstream Integration
 
-    results in x.b and x.c saving on write as well, nesting the b.c
-    group in the HDF5. Storing metadata is possible in the usual way
-    (see the Node doctring) in x, x.a, a.b, and x.c.
+        See the Node docstring. Node-like attributes will be written to file by
+        the Custom.to_h5 method, however, to ensure those attributes are correctly
+        read the new class must modify the ._get_constructor_args and
+        ._populate_instance methods.
 
-    Downstream Integration
-    ----------------------
-    See the Node docstring for introductory remarks. A class inheriting from
-    Custom must define ._get_constructor_args and ._populate_instance to read
-    attribute nodes correctly.
+        ._get_emd_attr_data provides access to node-like attributes, which it returns
+        as a dictionary. So for class X above, we could use
 
-        >>> @classmethod
-        >>> def _get_constructor_args(cls, group):
-        >>>     md = Node.from_h5(group).metadata
-        >>>     d = cls._get_emd_attr_data(group)
-        >>>     ars = {
-        >>>         'x' : md['x'],
-        >>>         'y' : d['y'],
-        >>>         'z' : d['y'].metadata['z']
-        >>>     }
-        >>> return args
+            >>> @classmethod
+            >>> def _get_constructor_args(cls, group):
+            >>>     d = cls._get_emd_attr_data(group)
+            >>>     args = {
+            >>>         'a' : d['a'].shape,
+            >>>         'b' : d['b'].shape
+            >>>     }
+            >>> return args
 
-    fetches metadata and data and returns an argument dictionary, and
+        to ensure the right arguments are passed to ``X.__init__``. If for some
+        X instance x the x.a and x.b attribute data changed after
+        instantiation but before it was written to disk, these will need to
+        be populated, which can be accomoplished e.g. with
 
-        >>> def _populate_instance(self, group):
-        >>>     d = cls._get_emd_attr_data(group)
-        >>>     self.a = d['a']
-
-    populates a node-like attribute after instantiation. ._get_emd_attr_data
-    returns a dictionary of all node-like attributes.
+            >>> def _populate_instance(self, group):
+            >>>     d = cls._get_emd_attr_data(group)
+            >>>     self.a = d['a']
+            >>>     self.b = d['b']
     """
     _emd_group_type = 'custom'
     def __init__(self,name='custom'):
