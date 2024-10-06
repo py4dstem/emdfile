@@ -1,0 +1,4 @@
+# Pin versions of sphinx and sphinx add-ons used to build docs
+sphinx==8.0.2
+alabaster==1.0.0
+
