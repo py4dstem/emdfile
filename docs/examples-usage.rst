@@ -3,6 +3,21 @@
 Examples and Usage
 ==================
 
+If you just want the examples, see the `basic usage <TODO>`_ notebook in the repo
+`sample-code <TODO>`_ folder. Read on for a few examples with light exposition,
+including :ref:`basic examples <basics>`, :ref:`building trees <build-trees>`,
+:ref:`including metadata <metadata-example>`, :ref:`working with nodes<data-nodes>`,
+:ref:`array usage <array-example>`, :ref:`appending to files <append-examples>`,
+and a comment on :ref:`defining your own classes <define-classes>` which can use
+the ``emdfile`` read/write infrastructure.
+
+
+.. _basics:
+
+******
+Basics
+******
+
 After
 
 .. code-block::
@@ -13,7 +28,7 @@ save and read an array with
 
 .. code-block::
 
-    >>> ar = np.random.rand((5,5))
+    >>> ar = np.random.random((5,5))
     >>> emd.save(path, ar)
     >>> _ar = emd.read(path)
 
@@ -36,9 +51,12 @@ and read and unpack them with
 .. code-block:: 
 
     >>> data = emd.read(path)
-    >>> _ar_A = data.tree('ar0')
-    >>> _ar_B = data.tree('ar1')
-    >>> _ar_C = data.tree('ar2')
+    >>> _ar_A = data.tree('array_0')
+    >>> _ar_B = data.tree('array_1')
+    >>> _ar_C = data.tree('array_2')
+    >>> _dic_A = data.metadata['dictionary_0']
+    >>> _dic_B = data.metadata['dictionary_1']
+    >>> _dic_C = data.metadata['dictionary_2']
 
 
 .. _build-trees:
@@ -64,16 +82,16 @@ and display it with
 
 .. code-block::
 
-    >>> R.show()
+    >>> R.tree()
 
 which prints
 
 .. code-block::
 
-    root
-      |---A
-      |---B
-          |---C
+    /
+    |---A
+    |---B
+        |---C
 
 Save, then print the file contents with
 
@@ -86,10 +104,11 @@ which prints
 
 .. code-block::
 
-    root
-      |---A
-      |---B
-          |---C
+    /
+    |---root
+        |---A
+        |---B
+            |---C
 
 Read the whole tree again with
 
@@ -101,9 +120,9 @@ or read some subset with
 
 .. code-block::
 
-    >>> data = emd.read(path, emdpath='A')                  # reads A
-    >>> data = emd.read(path, emdpath='B')                  # reads B---C
-    >>> data = emd.read(path, emdpath='B', tree=False)      # reads B only
+    >>> data = emd.read(path, emdpath='root/A')             # reads A
+    >>> data = emd.read(path, emdpath='root/B')             # reads B---C
+    >>> data = emd.read(path, emdpath='root/B', tree=False) # reads B only
 
 
 .. _metadata-example:
@@ -120,7 +139,11 @@ instance
     >>> emd.save(path, {'a':1,'b':2})
     >>> x = emd.read(path)
     >>> print(x)
-    TODO
+    Metadata( A Metadata instance called 'dictionary', containing the following fields:
+
+          a:   1
+          b:   2
+    )
 
 You can access values like a normal Python dictionary
 
@@ -142,7 +165,7 @@ and numpy values. Doing
 
     >>> m = emd.Metadata( name='my_metadata' )
     >>> m['x'] = True
-    >>> m['y'] = np.random.rand((3,4,5))
+    >>> m['y'] = np.random.random((3,4,5))
     >>> m['z'] = {
     >>>     'alpha' : None,
     >>>     'beta' : {
@@ -162,7 +185,12 @@ reads it again. Print its contents with
 .. code-block::
 
     >> print(_m)
-    TODO
+    Metadata( A Metadata instance called 'my_metadata', containing the following fields:
+
+          x:   True
+          y:   3D-array
+          z:   {'alpha': None, 'beta': {'gamma': [10, 11, 12]}}
+    )
 
 Any number of Metadata instances can be stored in each emdfile node - see the
 :doc:`Metadata <api/classes/metadata>` and :ref:`Node <Node>` docstrings for more
@@ -192,8 +220,8 @@ allow storing many ``Metadata`` instances in a given node. Doing
 
 .. code-block::
 
-    >>> node.metadata = Metadata('md1',{'x':1,'y':2})
-    >>> node.metadata = Metadata('md2',{'a':1,'b':{'c':2,'d':3}})
+    >>> node.metadata = emd.Metadata('md1',{'x':1,'y':2})
+    >>> node.metadata = emd.Metadata('md2',{'a':1,'b':{'c':2,'d':3}})
 
 will store *both* ``Metadata`` instances md1 and md2 in ``node``
 (and not overwrite one of them, as you would expect in normal
@@ -203,18 +231,27 @@ in a node with
 .. code-block::
 
     >>> node.metadata
-
-which, in this example, will return
-
-.. code-block::
-
-    {...TODO...}
+    {'md1': Metadata( A Metadata instance called 'md1', containing the following fields:
+     
+               x:   1
+               y:   2
+     ),
+     'md2': Metadata( A Metadata instance called 'md2', containing the following fields:
+     
+               a:   1
+               b:   {'c': 2, 'd': 3}
+     )}
 
 and one of the ``Metadata`` instances can be retrieved by
 
 .. code-block::
 
     >>> node.metadata['md1']
+    Metadata( A Metadata instance called 'md1', containing the following fields:
+
+              x:   1
+              y:   2
+    )
 
 Basic EMD ``.tree`` usage for building and printing tree structures is
 :ref:`shown above <build-trees>`.  Using ``.tree`` you can also retrieve any
@@ -227,30 +264,30 @@ See the :ref:`Node <Node>` documentation.
 
 .. _array-example:
 
-********************************
-Arrays and Built-in Calibrations
-********************************
+******************************
+Arrays & Built-in Calibrations
+******************************
 
-The :ref:`Array <Array>` class enables storage of array-like data of
-any dimensionality
-
-.. code-block::
-
-    >>> array = emd.Array(np.random.rand((3,3)))
-
-and also natively stores specific metadata intended to describe the
-data and its coordinate system.  Instantiate an Array instance with
-this calibrating metadata included with, e.g.
+The :ref:`Array <Array>` class enables storage of array-like data. The
+minimal required argument to make a new instance is a numpy array
 
 .. code-block::
 
-    >>> ar = Array(
+    >>> array = emd.Array(np.random.random((3,3)))
+
+The ``Array`` class also natively stores some self-descriptive metadata
+specifying the data and its coordinate system.  Instantiate an Array instance
+with this calibrating metadata included with e.g.
+
+.. code-block::
+
+    >>> ar = emd.Array(
     >>>     np.ones((20,40,1000)),
     >>>     name = '3ddatacube',
     >>>     units = 'intensity',
     >>>     dims = [
     >>>         [0,5],
-    >>>         [0,5]
+    >>>         [0,5],
     >>>         [0,0.02],
     >>>     ],
     >>>     dim_units = [
@@ -268,14 +305,27 @@ this calibrating metadata included with, e.g.
 where ``dims`` generates vectors which calibrate each of the array's axes.
 In the case above, the two numbers given (e.g. ``[0,5]`` for each of the
 first two dimensions) are linearly extrapolated, so the first dimension's
-first 5 pixels correspond to the locations ``[0,5,10,15,20...]``. The
-dimension vectors, units, and names can all be retrieved or set after
+first 5 pixels correspond to the locations ``[0,5,10,15,20...]``. Printing
+the array to standard output displays the calibration info
+
+.. code-block::
+
+    >>> print(array)
+    Array( A 3-dimensional array of shape (20, 40, 1000) called '3ddatacube',
+           with dimensions:
+
+               x = [0,5,10,...] nm
+               y = [0,5,10,...] nm
+               E = [0.0,0.02,0.04,...] eV
+    )
+
+The dimension vectors, units, and names can all be retrieved or set after
 instantiation with various ``Array`` methods like
 
 .. code-block::
 
     >>> ar.dims
-    >>> ar.get_dim(n)
+    >>> ar.get_dim
     >>> ar.set_dim
     >>> ar.set_dim_units
     >>> ar.set_dim_name
@@ -289,9 +339,9 @@ and :ref:`PointListArray <PointListArray>` datatypes.
 
 .. _append-examples:
 
-*************************************
-Appending and Complex Write Behaviors
-*************************************
+***********
+Append Mode
+***********
 
 In addition to writing new files, ``emdfile`` allows appending new data to
 existing files. If we first write some tree
@@ -331,8 +381,8 @@ For example, if we make a tree and save it
 
 .. code-block::
 
-    >>> root = emd.root( 'my_root' )
-    >>> ar1 = emd.Array(np.ones((5,5),'array1'))
+    >>> root = emd.Root( 'my_root' )
+    >>> ar1 = emd.Array(np.ones((5,5)),'array1')
     >>> root.tree(ar1)
     >>> emd.save(path, root)
 
@@ -402,7 +452,7 @@ possible. See the :ref:`save <save>` docs for more info.
 .. _define-classes:
 
 ****************
-Defining classes
+Defining Classes
 ****************
 
 ``emdfile`` is designed for downstream integration, that is, you can build
