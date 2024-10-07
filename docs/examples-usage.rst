@@ -14,8 +14,10 @@ Below are introductory examples on
 * :ref:`append mode <append-examples>`
 * :ref:`defining classes <define-classes>`
 
-See also the `basic usage <TODO>`_ notebook in the repo
-`sample-code <TODO>`_ folder.
+See also the
+`basic usage <https://github.com/py4dstem/emdfile/blob/main/samplecode/basic_usage.ipynb>`_
+notebook in the repo
+`sample-code <https://github.com/py4dstem/emdfile/tree/main/samplecode>`_ folder.
 
 
 .. _basics:
