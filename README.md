@@ -27,7 +27,7 @@ in this repository.
 
 ## Contributors
 
-The project was made by [Ben Savitzky](https://github.com/bsavitzky) with lots of helps. Special thanks to
+The project was made by [Ben Savitzky](https://github.com/bsavitzky) with lots of help - special thanks to
 
 * [Peter Ercius](https://github.com/ercius) who wrote the EMD 0.1 reader,
 * [Steven E. Zeltmann](https://github.com/sezelt) who wrote tqdmnd,
