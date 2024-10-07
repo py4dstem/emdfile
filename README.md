@@ -4,10 +4,8 @@
 HDF5 files. EMD (Electron Microscopy Dataset) 1.0 is a file specification
 designed to carry arbitrary data and metadata in tree-like hierarchies.
 
-The [`emdfile` documentation ](https://emdfile.readthedocs.io/en/latest/)
-includes installation, basic usage examples, and the program API. The
-the [EMD 1.0 specification](https://emdatasets.com/format/) details the
-format structure. 
+See also the [documentation ](https://emdfile.readthedocs.io/en/latest/)
+and the [EMD 1.0 specification](https://emdatasets.com/format/).
 
 
 ## Installation
