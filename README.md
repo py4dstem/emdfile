@@ -10,7 +10,7 @@ and the [EMD 1.0 specification](https://emdatasets.com/format/).
 
 ## Installation
 
-Run
+Do
 
 > pip install emdfile
 
