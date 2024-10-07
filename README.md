@@ -6,6 +6,7 @@ designed to carry arbitrary data and metadata in tree-like hierarchies.
 
 See also the [documentation ](https://emdfile.readthedocs.io/en/latest/)
 and the [EMD 1.0 specification](https://emdatasets.com/format/).
+If you run into a problem, please [file an issue](https://github.com/py4dstem/emdfile/issues).
 
 
 ## Installation
