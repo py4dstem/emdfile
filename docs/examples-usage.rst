@@ -3,13 +3,19 @@
 Examples and Usage
 ==================
 
-If you just want the examples, see the `basic usage <TODO>`_ notebook in the repo
-`sample-code <TODO>`_ folder. Read on for a few examples with light exposition,
-including :ref:`basic examples <basics>`, :ref:`building trees <build-trees>`,
-:ref:`including metadata <metadata-example>`, :ref:`working with nodes<data-nodes>`,
-:ref:`array usage <array-example>`, :ref:`appending to files <append-examples>`,
-and a comment on :ref:`defining your own classes <define-classes>` which can use
-the ``emdfile`` read/write infrastructure.
+Below are introductory examples on
+
+* :ref:`basics <basics>`
+* :ref:`trees <build-trees>`
+* :ref:`metadata <metadata-example>`
+* :ref:`nodes <data-nodes>`
+* :ref:`arrays <array-example>`
+* :ref:`more data classes <more-data-classes>`
+* :ref:`append mode <append-examples>`
+* :ref:`defining classes <define-classes>`
+
+See also the `basic usage <TODO>`_ notebook in the repo
+`sample-code <TODO>`_ folder.
 
 
 .. _basics:
@@ -18,11 +24,19 @@ the ``emdfile`` read/write infrastructure.
 Basics
 ******
 
+.. admonition:: Includes
+
+    * :ref:`Save & read an array <save-read-array>`
+    * :ref:`Save & read a dictionary <save-read-dict>`
+    * :ref:`Save & read several arrays & dicts <save-read-several>`
+
 After
 
 .. code-block::
 
     >>> import emdfile as emd, numpy as np
+
+.. _save-read-array:
 
 save and read an array with
 
@@ -32,6 +46,8 @@ save and read an array with
     >>> emd.save(path, ar)
     >>> _ar = emd.read(path)
 
+.. _save-read-dict:
+
 or a Python dictionary with
 
 .. code-block::
@@ -39,6 +55,8 @@ or a Python dictionary with
     >>> dic = {'a':1, 'b':2}
     >>> emd.save(path, dic)
     >>> _dic = emd.read(path)
+
+.. _save-read-several:
 
 or save a combination of arrays ``ar_*`` and ``dic_*`` with
 
@@ -61,13 +79,21 @@ and read and unpack them with
 
 .. _build-trees:
 
-***********
-Build Trees
-***********
+*****
+Trees
+*****
 
-The ``emdfile`` classes can hold datasets, calibrations, and arbitrary metadata
-- see e.g. the :ref:`Array <Array>` docs or :ref:`this example <array-example>`.
-They can also be composed into filetree-like heirarchies.  For ``emdfile`` class
+.. admonition:: Includes
+
+    * :ref:`Build a tree <build-a-tree>`
+    * :ref:`Inspect a Python tree <inspect-python-tree>`
+    * :ref:`Save a tree <save-a-tree>`
+    * :ref:`Inspect an HDF5 tree <inspect-hdf5-tree>`
+    * :ref:`Read from an HDF5 tree <read-hdf5-tree>`
+
+.. _build-a-tree:
+
+``emdfile`` classes can be composed into filetree-like heirarchies. For class
 instances ``A``, ``B``, and ``C`` with names ``'A'``, ``'B'`` and ``'C'`` build
 a tree with
 
@@ -77,6 +103,8 @@ a tree with
     >>> R.tree(A)
     >>> R.tree(B)
     >>> B.tree(C)
+
+.. _inspect-python-tree:
 
 and display it with 
 
@@ -93,11 +121,20 @@ which prints
     |---B
         |---C
 
-Save, then print the file contents with
+.. _save-a-tree:
+
+Save the whole tree with
 
 .. code-block::
 
     >>> emd.save(path, R)
+
+.. _inspect-hdf5-tree:
+
+then print the file contents with
+
+.. code-block::
+
     >>> emd.printtree(path)
 
 which prints
@@ -109,6 +146,8 @@ which prints
         |---A
         |---B
             |---C
+
+.. _read-hdf5-tree:
 
 Read the whole tree again with
 
@@ -127,9 +166,17 @@ or read some subset with
 
 .. _metadata-example:
 
-****************
-Include Metadata
-****************
+********
+Metadata
+********
+
+.. admonition:: Includes
+
+    * :ref:`Read dictionaries to Metadata <read-dict-to-metadata>`
+    * :ref:`Use Metadata like dictionaries <use-metadata-like-dict>`
+    * :ref:`Store various data types <store-data-types>`
+
+.. _read-dict-to-metadata:
 
 When you save a Python dictionary and read it again, you get an ``emd.Metadata``
 instance
@@ -145,6 +192,8 @@ instance
           b:   2
     )
 
+.. _use-metadata-like-dict:
+
 You can access values like a normal Python dictionary
 
 .. code-block::
@@ -157,6 +206,8 @@ as well as add data
 .. code-block::
 
     >>> x['c'] = 3
+
+.. _store-data-types:
 
 Nested dictionarys of any depth are premitted, as are various Python
 and numpy values. Doing
@@ -199,14 +250,22 @@ information.
 
 .. _data-nodes:
 
-******************
-Working with Nodes
-******************
+*****
+Nodes
+*****
+
+.. admonition:: Includes
+
+    * :ref:`Nodes have names <node-names>`
+    * :ref:`Nodes hold arbitrary metadata <nodes-hold-metadata>`
+    * :ref:`Nodes have a versatile .tree method <node-tree-method>`
 
 The :ref:`Node <Node>` class is the base class that all
 :doc:`emdfile classes <api/classes/index>` inherit from, allowing them
 to build and modify trees and store arbitrary metadata. Each node
 has a ``.name`` and ``.metadata`` attribute and a ``.tree`` method.
+
+.. _node-names:
 
 A node's name is used to find it in data trees and to save it to
 files, and can be assigned during instantiation
@@ -214,6 +273,8 @@ files, and can be assigned during instantiation
 .. code-block::
 
     >>> node = emd.Node( name='my_node' )
+
+.. _nodes-hold-metadata:
 
 The ``.metadata`` property has unique assignment behavior to
 allow storing many ``Metadata`` instances in a given node. Doing
@@ -253,6 +314,8 @@ and one of the ``Metadata`` instances can be retrieved by
               y:   2
     )
 
+.. _node-tree-method:
+
 Basic EMD ``.tree`` usage for building and printing tree structures is
 :ref:`shown above <build-trees>`.  Using ``.tree`` you can also retrieve any
 tree node, split one tree into two with the ``cut`` operation, or merge two
@@ -264,9 +327,17 @@ See the :ref:`Node <Node>` documentation.
 
 .. _array-example:
 
-******************************
-Arrays & Built-in Calibrations
-******************************
+******
+Arrays
+******
+
+.. admonition:: Includes
+
+    * :ref:`Minimal Array instantiation <minimal-array>`
+    * :ref:`Arrays with built-in calibrations <array-calibrations>`
+    * :ref:`Get or modify dimension vectors <dim-vectors>`
+
+.. _minimal-array:
 
 The :ref:`Array <Array>` class enables storage of array-like data. The
 minimal required argument to make a new instance is a numpy array
@@ -274,6 +345,8 @@ minimal required argument to make a new instance is a numpy array
 .. code-block::
 
     >>> array = emd.Array(np.random.random((3,3)))
+
+.. _array-calibrations:
 
 The ``Array`` class also natively stores some self-descriptive metadata
 specifying the data and its coordinate system.  Instantiate an Array instance
@@ -319,6 +392,8 @@ the array to standard output displays the calibration info
                E = [0.0,0.02,0.04,...] eV
     )
 
+.. _dim-vectors:
+
 The dimension vectors, units, and names can all be retrieved or set after
 instantiation with various ``Array`` methods like
 
@@ -332,9 +407,24 @@ instantiation with various ``Array`` methods like
 
 See the :ref:`Array <Array>` docs for further discussion. ``Array``
 instances have all the normal :ref:`Node <data-nodes>` functionality
-like ``.metadata`` and ``.tree``.  See also the :ref:`PointList <PointList>`
-and :ref:`PointListArray <PointListArray>` datatypes.
+like ``.metadata`` and ``.tree``.
 
+
+.. _more-data-classes:
+
+*****************
+More Data Classes
+*****************
+
+In addition to ``Array``, the normal data-containing classes include ``PointList``
+for a set of points in some M dimensional space, and ``PointListArray`` for "ragged
+array"-like data, with 2+1 dimensional data currently supported.  For instantiation
+and usage, see the :ref:`PointList <PointList>` and
+:ref:`PointListArray <PointListArray>` docstrings.
+
+``emdfile`` also includes a ``Custom`` class, designed for composition of the other
+class types into a single Node container.  See the
+:ref:`defining classes <define-classes>` section below.
 
 
 .. _append-examples:
@@ -342,6 +432,14 @@ and :ref:`PointListArray <PointListArray>` datatypes.
 ***********
 Append Mode
 ***********
+
+.. admonition:: Includes
+
+    * :ref:`Append two EMD trees to one file <append-two-trees-one-file>`
+    * :ref:`Append new data into an existing EMD tree <append-existing-tree>`
+    * :ref:`Append-over mode to overwrite data <append-over-mode>`
+
+.. _append-two-trees-one-file:
 
 In addition to writing new files, ``emdfile`` allows appending new data to
 existing files. If we first write some tree
@@ -368,6 +466,8 @@ the second tree can be added to the same file using "append" mode
 The two trees will both be saved to the same file, each starting
 at their own root group just under the HDF5 root, provided that the
 ``Root`` instances have different names.
+
+.. _append-existing-tree:
 
 If we append to an existing file using a root with a name already in the file,
 ``emdfile`` will perform a diffmerge-like operation, i.e. it will compare the
@@ -414,6 +514,8 @@ and after the second operation it will be
       |---ar1
             |---ar2
 
+.. _append-over-mode:
+
 What if the data in ``ar1`` is changed some time after its been
 written to file?  E.g. 
 
@@ -445,7 +547,6 @@ deleting the original file.
 More targetted save operations - e.g. adding or overwriting a single node, or
 appending a specific tree branch downstream of a selected node - are also
 possible. See the :ref:`save <save>` docs for more info.
-
 
 
 
