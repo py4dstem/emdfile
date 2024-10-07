@@ -1,14 +1,10 @@
 # This file defines a minimal subclass of Array
 
-
 from emdfile import Array
-import numpy as np
-from os.path import basename
 
 class SimpleArraySubclass(Array):
+    """ An Array subclass
     """
-    """
-
     def __init__(
         self,
         data,
@@ -23,10 +19,7 @@ class SimpleArraySubclass(Array):
             name = name,
             data = data
         )
-
         pass
-
-
 
     # Read methods
     @classmethod
@@ -36,9 +29,6 @@ class SimpleArraySubclass(Array):
         """
         # get array constructor args
         array_constr_args = Array._get_constructor_args(group)
-
         # return them
         return array_constr_args
-
-
 

@@ -3,23 +3,20 @@ import numpy as np
 from os.path import basename
 
 class CustomSubclass(Custom):
+    """ A Custom subclass
     """
-    """
-
     def __init__(
         self,
         x,
         y,
-        name = 'custom_subclass',
+        name = 'my_custom_subclass',
         ):
-        """
-        x,y are ints
+        """ x,y are ints
         """
         Custom.__init__(
             self,
             name = name,
         )
-
         # attributes which are emdfile classes get saved
         self.x = Array(
             name = 'x',
@@ -29,20 +26,15 @@ class CustomSubclass(Custom):
             name = 'y',
             data = np.full(5,y,dtype=[('a',int),('b',float)])
         )
-
         pass
 
-
-
     # Read methods
-
     @classmethod
     def _get_constructor_args(cls,group):
         """
         """
         # get data
         emd_data = cls._get_emd_attr_data(cls,group)
-
         # get arguments
         constructor_args = {
             'name' : basename(group.name),
@@ -50,27 +42,16 @@ class CustomSubclass(Custom):
             'y' : some_metadata['thing']
             # etc.
         }
-
         # return
         return constructor_args
 
-
-
-    # This method is optional
-
     def _populate_instance(self,group):
         """
-        Optional.  During read, this method is run after object instantiation.
         """
         pass
 
-
-
-
     # Write methods
-
     # This method is optional
-
     def to_h5(self,group):
         """
         Optional. If defined, should call Custom.to_h5(self,group) to handle
@@ -87,8 +68,5 @@ class CustomSubclass(Custom):
             }
         )
         Custom.to_h5(self,group)
-
-
-
 
 

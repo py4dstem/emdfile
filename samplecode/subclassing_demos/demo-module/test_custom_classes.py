@@ -1,12 +1,10 @@
 import emdfile as emd
 import numpy as np
 
-
 # import the classes inheriting from emdfile.
 # `sample_custom_emd_classes` must be a python module
 # which sets a variable `_emd_hook` to True in its
 # toplevel namespace (in this example, in __init__.py)
-
 from sample_custom_emd_classes import (
     SimpleArraySubclass,
     ArraySubclass,
@@ -100,7 +98,5 @@ if __name__ == "__main__":
     print(pla[2,3].data)
     print()
     #print(data.tree('test_custom').data)
-
-
 
 

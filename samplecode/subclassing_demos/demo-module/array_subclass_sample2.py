@@ -1,26 +1,22 @@
 # This file defines a subclass of Array
 # which contains a data array and a few attributes
 
-
 from emdfile import Array, Metadata, _read_metadata
 import numpy as np
 from os.path import basename
 
 class ArraySubclass(Array):
+    """ An Array subclass with data and some attributes
     """
-    """
-
     def __init__(
         self,
         data,
-        name = 'my_array_subclass',
+        name = 'my_class',
         color = 'blue',
         number = 7,
         elephants = True
         ):
         """
-        For some tuple `shape`, makes a data array of this
-        shape and wraps it as an Array instance.
         """
         # Initialize as the parent class
         Array.__init__(
@@ -33,10 +29,7 @@ class ArraySubclass(Array):
         self.color = color
         self.number = number
         self.elephants = elephants
-
         pass
-
-
 
     # Read methods
     @classmethod
@@ -46,10 +39,8 @@ class ArraySubclass(Array):
         """
         # get array constructor args
         array_constr_args = Array._get_constructor_args(group)
-
         # get metadata
         md = _read_metadata(group,'_attr_metadata')
-
         # make the dictionary of constructor arguments and return
         constructor_args = {
             'name' : basename(group.name),
@@ -59,7 +50,6 @@ class ArraySubclass(Array):
             'elephants' : md['elephants']
         }
         return constructor_args
-
 
     # Write methods
     def to_h5(self,group):
@@ -75,5 +65,4 @@ class ArraySubclass(Array):
             }
         )
         Array.to_h5(self,group)
-
 

@@ -2,19 +2,17 @@ from emdfile import PointListArray, Metadata, _read_metadata
 import numpy as np
 
 class PointListArraySubclass(PointListArray):
+    """ A PointListArray subclass
     """
-    """
-
     def __init__(
         self,
         shape,
-        name = 'my_pointlistarray_subclass',
+        name = 'my_pointlistarray',
         ):
         """
         A 2D ragged array of float32's. Shape must be a 2-tuple.
         Initializes empty.
         """
-
         # initialize
         PointListArray.__init__(
             self,
@@ -22,10 +20,7 @@ class PointListArraySubclass(PointListArray):
             dtype = np.float32,
             shape = shape
         )
-
         pass
-
-
 
     # Read methods
     @classmethod
@@ -35,7 +30,6 @@ class PointListArraySubclass(PointListArray):
         """
         # get array constructor args
         kwargs = PointListArray._get_constructor_args(group)
-
         # make the dictionary of constructor arguments and return
         constructor_args = {
             'shape' : kwargs['shape'],
@@ -43,10 +37,6 @@ class PointListArraySubclass(PointListArray):
         }
         return constructor_args
 
-
     # PointListArray already has a _populate instance method which
     # will add the ragged data array.
-
-
-
 

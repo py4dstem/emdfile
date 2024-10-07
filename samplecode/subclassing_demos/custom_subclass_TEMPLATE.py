@@ -1,36 +1,42 @@
 from emdfile import Custom, Metadata, _read_metadata
-import numpy as np
 from os.path import basename
 
 class CustomSubclass_TEMPLATE(Custom):
     """
-    An emdfile custom subclass template.  In a Custom subclass, any
-    class attributes with values equal to another emdfile class will be
-    saved with the class instance.
+    An emdfile custom subclass template.
 
-    There are two required methods: __init__, and _get_constructor_args.
+    In a Custom subclass, any class attributes with values equal to another
+    emdfile class will be saved with the class instance.
 
-    The __init__ method should call Custom.__init__.
+    There are two required methods:
+        __init__
+        _get_constructor_args
 
-    _get_constructor_args is required for reading the class.  When the
-    emdfile read() function finds an H5 group representing this class,
-    this method is called.  It should collect and return a dictionary
-    representing arguments that will be passed to the __init__ method.
+    There are two optional methods:
+        to_h5
+        _populate_instance
 
-    There are two optional methods: _populate_instance and to_h5.
+    The __init__ method should call Custom.__init__ and pass a name through.
 
-    If _populate method is defined then run when reading this object from
-    an H5 file, this method is run after instantiation, enabling additional
-    setup or configuration.
+    _get_constructor_args should return a dictionary of keyword:value
+    arguments that will be passed to the __init__ method when class
+    instances are created while reading from disk.
 
-    emdfile classes already have a .to_h5 method defined, which will handle
-    storing the data, the emdfile class' native metadata (e.g its name, dim
-    vectors, fields, shapes), and metadata stored in the .metadata property. If
-    additional customization is desired, the .to_h5 method can be overwritten.
-    In this case, the parent class' .to_h5 method should be run to save the
-    normal data and metadata.
+    .to_h5 is already defined, and handles storing data and metadata. If
+    additional customization is desired, .to_h5 can be overwritten, however
+    in this case the parent class' .to_h5 method should be run to create the
+    HDF5 group, save all node-like attributes, and save metadata. It accepts the
+    h5py.Group of the parent node.
+
+    The _populate instance method is required for Custom subclasses. This is
+    because the Custom class I/O is, in some sense, half complete: the special
+    thing Custom nodes do, i.e. store node-like data as attributes, is handled
+    correctly and automoatically when writing to files by the .to_h5 method,
+    however, is not yet handled when reading from files. To this end, the
+    _populate_instance method should be defined, it should read data-node like
+    subgroups into Python using _get_emd_attr_data, and it should assing that
+    data to attributes as appropriate.
     """
-
     def __init__(
         self,
         name = 'my_custom_subclass'
@@ -40,54 +46,34 @@ class CustomSubclass_TEMPLATE(Custom):
         """
         Required. Should call Custom.__init__.
         """
-
-        # code
-        # ...
-        # ...
-
+        # code...
         # Initialize as the parent class
         Custom.__init__(
             self,
             name = name,
         )
-
         # Any class attribute with a value equal to
         # an emdfile class will be saved
         self.some_data = Array(
             name = 'some_data_array',
             data = data
         )
-
-        # code
-        # ...
-        # ...
-
+        # code...
         pass
 
-
-
     # Read methods
-
-
     # This method is required.
-
     @classmethod
     def _get_constructor_args(cls,group):
         """
         Required. Must return a dictionary representing arguments which will
         be passed to __init__ at read time.
         """
-
         # Retrieve emdfile class instances assigned to attributes
         emd_data = cls._get_emd_attr_data(cls,group)
-
         # Retrieve Metadata dictionaries
         some_metadata = _read_metadata(group,'name')
-
-        # code
-        # ...
-        # ...
-
+        # code...
         # make the dictionary of constructor arguments
         constructor_args = {
             'name' : basename(group.name),
@@ -95,27 +81,18 @@ class CustomSubclass_TEMPLATE(Custom):
             'thing' : some_metadata['thing']
             # etc.
         }
-
         # return
         return constructor_args
 
-
-
     # This method is optional
-
     def _populate_instance(self,group):
         """
         Optional.  During read, this method is run after object instantiation.
         """
         pass
 
-
-
-
     # Write methods
-
     # This method is optional
-
     def to_h5(self,group):
         """
         Optional. If defined, should call Custom.to_h5(self,group) to handle
@@ -132,8 +109,4 @@ class CustomSubclass_TEMPLATE(Custom):
             }
         )
         Custom.to_h5(self,group)
-
-
-
-
 
