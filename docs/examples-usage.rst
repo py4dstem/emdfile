@@ -574,11 +574,7 @@ which inherits from ``Array``, like
 and then store data and metadata, build trees, and save to and read from
 files using your new class.  For more info on class inheritance and
 downstream package integration, see the docs for the :ref:`Node <Node>` and
-:ref:`Custom <Custom>` classes.
-
-
-
-
-
+:ref:`Custom <Custom>` classes, and the repository
+`subclassing demos <https://github.com/py4dstem/emdfile/tree/main/samplecode/subclassing_demos>`_.
 
 
