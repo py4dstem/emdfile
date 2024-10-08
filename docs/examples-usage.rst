@@ -561,6 +561,6 @@ Defining Classes
 ``emdfile`` is designed for downstream integration, that is, you can build
 your own Python scripts, modules, and packages which import ``emdfile`` and
 use it to handle reading and writing operations. For more info, see the
-:doc:`subclassing guidelines <integration>`.
+:doc:`subclassing guidelines <subclassing>`.
 
 
