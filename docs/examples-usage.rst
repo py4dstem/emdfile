@@ -560,21 +560,7 @@ Defining Classes
 
 ``emdfile`` is designed for downstream integration, that is, you can build
 your own Python scripts, modules, and packages which import ``emdfile`` and
-use it to handle reading and writing operations. In particular, its classes
-are meant to be extensible - for example, you could make a class of your own
-which inherits from ``Array``, like
-
-.. code-block::
-
-    class MyDataBlock(Array):
-        ...
-        def __init__...
-        ...
-
-and then store data and metadata, build trees, and save to and read from
-files using your new class.  For more info on class inheritance and
-downstream package integration, see the docs for the :ref:`Node <Node>` and
-:ref:`Custom <Custom>` classes, and the repository
-`subclassing demos <https://github.com/py4dstem/emdfile/tree/main/samplecode/subclassing_demos>`_.
+use it to handle reading and writing operations. For more info, see the
+:doc:`subclassing guidelines <integration>`.
 
 
